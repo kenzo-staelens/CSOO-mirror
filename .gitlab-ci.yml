@@ -1,0 +1,9 @@
+# CI configuratioen for CSharpOO group runner
+CSharpOOTest:
+   tags:
+      - CSharpOO
+   script:
+      - "CSharpOOTest"
+   only:
+      - main
+      - master
