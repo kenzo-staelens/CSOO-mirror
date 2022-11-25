@@ -89,12 +89,16 @@ namespace Logica {
             this.preparedInput = new char[0];
         }
 
-        public void loadProgram(string filename) {
+        public void loadProgram(string programinput) {
             try {
-                this.program = this.fileLoader.Load(filename);
+                Path.GetFullPath(programinput);
+                this.program = this.fileLoader.Load(programinput);
+            }
+            catch (FileNotFoundException e){
+                this.outputFunction("file " + programinput + " could not be found");
             }
             catch (Exception e) {
-                this.outputFunction("Exception " + e.GetType().Name);
+                this.program = programinput;
             }
         }
 

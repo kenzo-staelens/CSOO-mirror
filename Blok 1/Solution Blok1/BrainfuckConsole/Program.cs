@@ -10,7 +10,9 @@ internal class Program {
             input,
             output
         );
-        bfinterpreter.loadProgram(@"C:\Users\User\Desktop\program.bf");
+        //bfinterpreter.loadProgram(@"C:\Users\User\Desktop\program.bf");
+        bfinterpreter.loadProgram(">+++++++++++[-<++++++>]<-.,.");
+        bfinterpreter.prepareInput("b");
         bfinterpreter.interpret();
     }
 }
