@@ -1,12 +1,17 @@
 ﻿using Logica;
-using System.Reflection;
+using System.Linq.Expressions;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
-
-        Console.WriteLine(Logica.EnumExtender.getDescriptionOf(commands.Inc));
+        Action<string> input = read => { Console.WriteLine("input requested: ");Console.Read();};
+        Action<string> output = write => { Console.WriteLine(write); }; 
+        BfInterpreter bfinterpreter = new BfInterpreter(
+            input,
+            output
+        );
+        bfinterpreter.loadProgram(@"./program.bf");
+        bfinterpreter.interpret();
     }
 }
