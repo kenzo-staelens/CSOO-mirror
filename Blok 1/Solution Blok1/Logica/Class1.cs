@@ -20,8 +20,8 @@ namespace Logica {
         [Description(",")] Read,
     }
 
-    public class EnumExtender{
-        public EnumExtender() {}
+    public class EnumExtender {
+        public EnumExtender() { }
 
         /// <summary>
         /// return de beschrijving die bij een enum hoort
@@ -31,11 +31,9 @@ namespace Logica {
         /// <see cref="https://www.codingame.com/playgrounds/2487/c---how-to-display-friendly-names-for-enumerations"></see>
         public static string getDescriptionOf(Enum e) {
             MemberInfo[] memberInfo = e.GetType().GetMember(e.ToString());
-            if ((memberInfo != null && memberInfo.Length > 0))
-            {
+            if ((memberInfo != null && memberInfo.Length > 0)) {
                 var _Attribs = memberInfo[0].GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
-                if ((_Attribs != null && _Attribs.Count() > 0))
-                {
+                if ((_Attribs != null && _Attribs.Count() > 0)) {
                     return ((System.ComponentModel.DescriptionAttribute)_Attribs.ElementAt(0)).Description;
                 }
             }
@@ -56,8 +54,7 @@ namespace Logica {
                     if (attribute.Description == description)
                         return (T)field.GetValue(null);
                 }
-                else
-                {
+                else {
                     if (field.Name == description)
                         return (T)field.GetValue(null);
                 }
@@ -67,32 +64,47 @@ namespace Logica {
     }
 
     public class BfInterpreter {
-        FileLoader fileLoader;
-        byte[] memory { get; }
+        private FileLoader fileLoader;
+        private byte[] memory { get; }
         private Int16 memoryPointer;
         /// <see cref="https://www.tutorialsteacher.com/csharp/csharp-stack"></see>
         private Stack<int> loopPointer;
+        int inputPointer;
         private string program;
+        private char[] preparedInput;
         private Func<char> inputFunction;
         private Action<string> outputFunction;
+
 
         public BfInterpreter(Func<char> inputFunction, Action<string> outputFunction) {
             this.fileLoader = new FileLoader();
             this.memory = new byte[Int16.MaxValue];
             this.memoryPointer = 0;
             this.loopPointer = new Stack<int>();
+            this.inputPointer = 0;
+
             this.inputFunction = inputFunction;
             this.outputFunction = outputFunction;
             this.program = "";
+            this.preparedInput = new char[0];
         }
 
         public void loadProgram(string filename) {
-            try{
+            try {
                 this.program = this.fileLoader.Load(filename);
             }
             catch (Exception e) {
                 this.outputFunction("Exception " + e.GetType().Name);
             }
+        }
+
+        public void prepareInput(string input) {
+            this.preparedInput = new char[input.Length];
+            foreach (char c in input) {
+                this.preparedInput[inputPointer] = c;
+                inputPointer++;
+            }
+            this.inputPointer = 0;
         }
 
         public void interpret() {
@@ -125,14 +137,18 @@ namespace Logica {
 
                             }
                         }
-                        
                         break;
                     case Commands.Jmp:
-                        if (memory[memoryPointer]!=0) i = this.loopPointer.Pop()-1;
+                        if (memory[memoryPointer] != 0) i = this.loopPointer.Pop() - 1;
                         break;
                     case Commands.Read:
                         ///<see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
-                        this.memory[memoryPointer] = Convert.ToByte(inputFunction());
+                        if (inputPointer < this.preparedInput.Length) {
+                            this.memory[memoryPointer] = Convert.ToByte(this.preparedInput[inputPointer]);
+                        }
+                        else {
+                            this.memory[memoryPointer] = Convert.ToByte(inputFunction());
+                        }
                         break;
                     case Commands.Write:
                         string outp = ((char)this.memory[memoryPointer]).ToString();

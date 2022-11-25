@@ -1,9 +1,7 @@
-﻿namespace Datalaag
-{
-    public class FileLoader
-    {
-        public FileLoader() { 
-            
+﻿namespace Datalaag {
+    public class FileLoader {
+        public FileLoader() {
+
         }
 
         public string Load(string filename) {
