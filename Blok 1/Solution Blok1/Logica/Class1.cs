@@ -1,6 +1,5 @@
 ﻿using Datalaag;
 using System.ComponentModel;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Logica {
@@ -132,6 +131,7 @@ namespace Logica {
         public void Interpret() {
             for (int i = 0; i < this.program.Length; i++) {
                 Commands cmd = EnumExtender.DescriptionToEnum<Commands>(this.program[i].ToString());
+                if(memoryPointer<0 || memoryPointer>this.memory.Length) throw new IndexOutOfRangeException("tried to access index " + memoryPointer.ToString() + " of memory with size " + memory.Length.ToString())
                 switch (cmd) {
                     case Commands.Inc:
                         this.memory[memoryPointer]++;
