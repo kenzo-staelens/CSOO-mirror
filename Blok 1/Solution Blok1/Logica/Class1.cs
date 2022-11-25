@@ -26,8 +26,8 @@ namespace Logica {
         /// <summary>
         /// return de beschrijving die bij een enum hoort
         /// </summary>
-        /// <param name="e"></param>
-        /// <returns></returns>
+        /// <param name="e">meegegeven enum waarde</param>
+        /// <returns>beschrijving die bij de enum hoort</returns>
         /// <see cref="https://www.codingame.com/playgrounds/2487/c---how-to-display-friendly-names-for-enumerations"></see>
         public static string getDescriptionOf(Enum e) {
             MemberInfo[] memberInfo = e.GetType().GetMember(e.ToString());
@@ -43,8 +43,8 @@ namespace Logica {
         /// <summary>
         /// match een enum met een meegegeven description, return deze
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="description"></param>
+        /// <typeparam name="T">enum klasse</typeparam>
+        /// <param name="description">meegegeven beschrijving</param>
         /// <returns>Enum</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <see cref="https://stackoverflow.com/questions/4367723/get-enum-from-description-attribute"></see>
@@ -75,7 +75,11 @@ namespace Logica {
         private Func<char> inputFunction;
         private Action<string> outputFunction;
 
-
+        /// <summary>
+        /// setup interne parameters voor programma
+        /// </summary>
+        /// <param name="inputFunction">funcie die wordt uitgeroepen bij "," commando</param>
+        /// <param name="outputFunction">funcie die wordt uitgeroepen bij "." commando</param>
         public BfInterpreter(Func<char> inputFunction, Action<string> outputFunction) {
             this.fileLoader = new FileLoader();
             this.memory = new byte[Int16.MaxValue];
@@ -89,6 +93,11 @@ namespace Logica {
             this.preparedInput = new char[0];
         }
 
+        /// <summary>
+        /// laad een brainfuck programma van string of file
+        /// </summary>
+        /// <param name="programinput"></param>
+        /// <see cref="https://stackoverflow.com/questions/3137097/check-if-a-string-is-a-valid-windows-directory-folder-path"></see>
         public void loadProgram(string programinput) {
             try {
                 Path.GetFullPath(programinput);
@@ -102,6 +111,10 @@ namespace Logica {
             }
         }
 
+        /// <summary>
+        /// zet een predefined input voor het uit te voeren programma, als te weinig input is gegeven wordt deze later gevraagd
+        /// </summary>
+        /// <param name="input">meegegeven programma in stringvorm of file path</param>
         public void prepareInput(string input) {
             this.preparedInput = new char[input.Length];
             foreach (char c in input) {
@@ -111,10 +124,14 @@ namespace Logica {
             this.inputPointer = 0;
         }
 
+        /// <summary>
+        /// het uitvoeren van het brainfuck programma gebeurt hier
+        /// </summary>
+        /// <see cref="https://www.w3schools.com/cs/cs_switch.php"/>
+        /// <see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
         public void interpret() {
             for (int i = 0; i < this.program.Length; i++) {
                 Commands cmd = EnumExtender.descriptionToEnum<Commands>(this.program[i].ToString());
-                ///https://www.w3schools.com/cs/cs_switch.php
                 switch (cmd) {
                     case Commands.Inc:
                         this.memory[memoryPointer]++;
@@ -129,12 +146,12 @@ namespace Logica {
                         this.memoryPointer--;
                         break;
                     case Commands.Loop:
-                        //find index of matching ]
                         int bracketCount = 0;
                         if (this.memory[memoryPointer] != 0) {
                             this.loopPointer.Push(i);
                         }
                         else {
+                            //find index of matching ], dit codeblok hoort namelijk niet te worden uitgevoerd
                             for (int j = i; j < this.program.Length; j++) {
                                 if (this.program[i].ToString() == EnumExtender.getDescriptionOf(Commands.Loop)) bracketCount++;
                                 if (this.program[i].ToString() == EnumExtender.getDescriptionOf(Commands.Jmp)) bracketCount--;
@@ -146,7 +163,6 @@ namespace Logica {
                         if (memory[memoryPointer] != 0) i = this.loopPointer.Pop() - 1;
                         break;
                     case Commands.Read:
-                        ///<see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
                         if (inputPointer < this.preparedInput.Length) {
                             this.memory[memoryPointer] = Convert.ToByte(this.preparedInput[inputPointer]);
                         }
