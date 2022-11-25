@@ -76,7 +76,6 @@ namespace Logica {
         private Func<char> inputFunction;
         private Action<string> outputFunction;
 
-
         public BfInterpreter(Func<char> inputFunction, Action<string> outputFunction) {
             this.fileLoader = new FileLoader();
             this.memory = new byte[Int16.MaxValue];
@@ -84,6 +83,7 @@ namespace Logica {
             this.loopPointer = new Stack<int>();
             this.inputFunction = inputFunction;
             this.outputFunction = outputFunction;
+            this.program = "";
         }
 
         public void loadProgram(string filename) {
@@ -99,7 +99,6 @@ namespace Logica {
             for (int i = 0; i < this.program.Length; i++) {
                 Commands cmd = EnumExtender.descriptionToEnum<Commands>(this.program[i].ToString());
                 ///https://www.w3schools.com/cs/cs_switch.php
-                
                 switch (cmd) {
                     case Commands.Inc:
                         this.memory[memoryPointer]++;
@@ -114,10 +113,22 @@ namespace Logica {
                         this.memoryPointer--;
                         break;
                     case Commands.Loop:
-                        this.loopPointer.Push(i);
+                        //find index of matching ]
+                        int bracketCount = 0;
+                        if (this.memory[memoryPointer] != 0) {
+                            this.loopPointer.Push(i);
+                        }
+                        else {
+                            for (int j = i; j < this.program.Length; j++) {
+                                if (this.program[i].ToString() == EnumExtender.getDescriptionOf(Commands.Loop)) bracketCount++;
+                                if (this.program[i].ToString() == EnumExtender.getDescriptionOf(Commands.Jmp)) bracketCount--;
+
+                            }
+                        }
+                        
                         break;
                     case Commands.Jmp:
-                        i = this.loopPointer.Pop();
+                        if (memory[memoryPointer]!=0) i = this.loopPointer.Pop()-1;
                         break;
                     case Commands.Read:
                         ///<see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
