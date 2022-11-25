@@ -29,7 +29,7 @@ namespace Logica {
         /// <param name="e">meegegeven enum waarde</param>
         /// <returns>beschrijving die bij de enum hoort</returns>
         /// <see cref="https://www.codingame.com/playgrounds/2487/c---how-to-display-friendly-names-for-enumerations"></see>
-        public static string getDescriptionOf(Enum e) {
+        public static string GetDescriptionOf(Enum e) {
             MemberInfo[] memberInfo = e.GetType().GetMember(e.ToString());
             if ((memberInfo != null && memberInfo.Length > 0)) {
                 var _Attribs = memberInfo[0].GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
@@ -48,7 +48,7 @@ namespace Logica {
         /// <returns>Enum</returns>
         /// <exception cref="ArgumentException"></exception>
         /// <see cref="https://stackoverflow.com/questions/4367723/get-enum-from-description-attribute"></see>
-        public static T descriptionToEnum<T>(string description) where T : Enum {
+        public static T DescriptionToEnum<T>(string description) where T : Enum {
             foreach (var field in typeof(T).GetFields()) {
                 if (Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) is DescriptionAttribute attribute) {
                     if (attribute.Description == description)
@@ -98,7 +98,7 @@ namespace Logica {
         /// </summary>
         /// <param name="programinput"></param>
         /// <see cref="https://stackoverflow.com/questions/3137097/check-if-a-string-is-a-valid-windows-directory-folder-path"></see>
-        public void loadProgram(string programinput) {
+        public void LoadProgram(string programinput) {
             try {
                 Path.GetFullPath(programinput);
                 this.program = this.fileLoader.Load(programinput);
@@ -115,7 +115,7 @@ namespace Logica {
         /// zet een predefined input voor het uit te voeren programma, als te weinig input is gegeven wordt deze later gevraagd
         /// </summary>
         /// <param name="input">meegegeven programma in stringvorm of file path</param>
-        public void prepareInput(string input) {
+        public void PrepareInput(string input) {
             this.preparedInput = new char[input.Length];
             foreach (char c in input) {
                 this.preparedInput[inputPointer] = c;
@@ -129,9 +129,9 @@ namespace Logica {
         /// </summary>
         /// <see cref="https://www.w3schools.com/cs/cs_switch.php"/>
         /// <see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
-        public void interpret() {
+        public void Interpret() {
             for (int i = 0; i < this.program.Length; i++) {
-                Commands cmd = EnumExtender.descriptionToEnum<Commands>(this.program[i].ToString());
+                Commands cmd = EnumExtender.DescriptionToEnum<Commands>(this.program[i].ToString());
                 switch (cmd) {
                     case Commands.Inc:
                         this.memory[memoryPointer]++;
@@ -153,8 +153,8 @@ namespace Logica {
                         else {
                             //find index of matching ], dit codeblok hoort namelijk niet te worden uitgevoerd
                             for (int j = i; j < this.program.Length; j++) {
-                                if (this.program[i].ToString() == EnumExtender.getDescriptionOf(Commands.Loop)) bracketCount++;
-                                if (this.program[i].ToString() == EnumExtender.getDescriptionOf(Commands.Jmp)) bracketCount--;
+                                if (this.program[i].ToString() == EnumExtender.GetDescriptionOf(Commands.Loop)) bracketCount++;
+                                if (this.program[i].ToString() == EnumExtender.GetDescriptionOf(Commands.Jmp)) bracketCount--;
 
                             }
                         }
