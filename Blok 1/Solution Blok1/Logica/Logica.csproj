@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Datalaag\Datalaag.csproj" />
+  </ItemGroup>
+
 </Project>
