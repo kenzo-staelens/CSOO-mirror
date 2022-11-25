@@ -9,7 +9,7 @@ namespace Logica {
     /// </summary>
     /// <see cref="https://stackoverflow.com/questions/2373986/how-can-i-use-a-special-char-in-a-c-sharp-enum"/>
     /// <see cref="https://stackoverflow.com/questions/13099834/how-to-get-the-display-name-attribute-of-an-enum-member-via-mvc-razor-code"/>
-    public enum commands {
+    public enum Commands {
         [Description("+")] Inc,
         [Description("-")] Dec,
         [Description("<")] Left,
@@ -68,28 +68,66 @@ namespace Logica {
 
     public class BfInterpreter {
         FileLoader fileLoader;
-        short[] memory { get; }
+        byte[] memory { get; }
+        private Int16 memoryPointer;
         /// <see cref="https://www.tutorialsteacher.com/csharp/csharp-stack"></see>
-        private Stack<int> loopLointer;
+        private Stack<int> loopPointer;
         private string program;
-        private Action<string> inputFunction, outputFunction;
+        private Func<char> inputFunction;
+        private Action<string> outputFunction;
 
 
-        public BfInterpreter(Action<string> inputFunction, Action<string> outputFunction) {
+        public BfInterpreter(Func<char> inputFunction, Action<string> outputFunction) {
             this.fileLoader = new FileLoader();
-            this.memory = new short[30000];
-            this.loopLointer = new Stack<int>();
+            this.memory = new byte[Int16.MaxValue];
+            this.memoryPointer = 0;
+            this.loopPointer = new Stack<int>();
             this.inputFunction = inputFunction;
             this.outputFunction = outputFunction;
         }
 
         public void loadProgram(string filename) {
-            this.program = this.fileLoader.Load(filename);
+            try{
+                this.program = this.fileLoader.Load(filename);
+            }
+            catch (Exception e) {
+                this.outputFunction("Exception " + e.GetType().Name);
+            }
         }
 
         public void interpret() {
-            for (int i = 0; i < this.program.Length; i++) { 
-                /// if program[i] in enum operate
+            for (int i = 0; i < this.program.Length; i++) {
+                Commands cmd = EnumExtender.descriptionToEnum<Commands>(this.program[i].ToString());
+                ///https://www.w3schools.com/cs/cs_switch.php
+                
+                switch (cmd) {
+                    case Commands.Inc:
+                        this.memory[memoryPointer]++;
+                        break;
+                    case Commands.Dec:
+                        this.memory[memoryPointer]--;
+                        break;
+                    case Commands.Right:
+                        this.memoryPointer++;
+                        break;
+                    case Commands.Left:
+                        this.memoryPointer--;
+                        break;
+                    case Commands.Loop:
+                        this.loopPointer.Push(i);
+                        break;
+                    case Commands.Jmp:
+                        i = this.loopPointer.Pop();
+                        break;
+                    case Commands.Read:
+                        ///<see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
+                        this.memory[memoryPointer] = Convert.ToByte(inputFunction());
+                        break;
+                    case Commands.Write:
+                        string outp = ((char)this.memory[memoryPointer]).ToString();
+                        outputFunction(outp);
+                        break;
+                }
             }
         }
     }
