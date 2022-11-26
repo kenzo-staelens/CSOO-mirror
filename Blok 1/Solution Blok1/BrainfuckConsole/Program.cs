@@ -15,9 +15,9 @@ internal class Program {
             Input,
             Output
         );
-        //bfinterpreter.loadProgram(@"C:\Users\User\Desktop\program.bf");
-        bfinterpreter.LoadProgram(">+++++++++++[-<++++++>]<-.,.");
-        bfinterpreter.PrepareInput("b");
+        bfinterpreter.loadProgram(@"C:\Users\User\Desktop\program.bf");
+        //bfinterpreter.LoadProgram(">+++++++++++[-<++++++>]<-.,.");
+        //bfinterpreter.PrepareInput("b");
         bfinterpreter.Interpret();
     }
 }
