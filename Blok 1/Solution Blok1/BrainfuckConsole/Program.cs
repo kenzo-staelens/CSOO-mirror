@@ -1,4 +1,4 @@
-﻿using Logica;
+using Logica;
 using System.Linq.Expressions;
 
 internal class Program {
@@ -15,9 +15,9 @@ internal class Program {
             Input,
             Output
         );
-        bfinterpreter.loadProgram(@"C:\Users\User\Desktop\program.bf");
-        //bfinterpreter.LoadProgram(">+++++++++++[-<++++++>]<-.,.");
-        //bfinterpreter.PrepareInput("b");
+        //bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\program.bf");
+        bfinterpreter.LoadProgram(">+++++++++++[-<++++++>]<-.,.");
+        bfinterpreter.PrepareInput("b");
         bfinterpreter.Interpret();
     }
 }
