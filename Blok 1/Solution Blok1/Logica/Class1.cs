@@ -1,5 +1,6 @@
 using Datalaag;
 using Globals;
+using System.Security.Cryptography;
 
 namespace Logica {
     public class BfInterpreter {
@@ -77,7 +78,7 @@ namespace Logica {
         /// <see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
         public void Interpret() {
             for (int i = 0; i < this.program.Length; i++) {
-                
+                Commands cmd = program[i];
                 if(memoryPointer<0 || memoryPointer>this.memory.Length) throw new IndexOutOfRangeException("tried to access index " + memoryPointer.ToString() + " of memory with size " + memory.Length.ToString());
                 switch (cmd) {
                     case Commands.Inc:
@@ -100,9 +101,8 @@ namespace Logica {
                         else {
                             //find index of matching ], dit codeblok hoort namelijk niet te worden uitgevoerd
                             for (int j = i; j < this.program.Length; j++) {
-                                if (this.program[i].ToString() == EnumExtender.GetDescriptionOf(Commands.Loop)) bracketCount++;
-                                if (this.program[i].ToString() == EnumExtender.GetDescriptionOf(Commands.Jmp)) bracketCount--;
-
+                                if (this.program[i] == Commands.Loop) bracketCount++;
+                                if (this.program[i]== Commands.Jmp) bracketCount--;
                             }
                         }
                         break;
