@@ -7,7 +7,6 @@ namespace Logica {
         /// <see cref="https://www.tutorialsteacher.com/csharp/csharp-stack"></see>
         private Stack<int> loopPointer;
         private int inputPointer;
-        private Programdata program;
         private List<byte> memory;//external read only
 
         /// <see cref="https://learn.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.management.sdk.sfc.ireadonlylist-1?view=sql-smo-160"</see>
@@ -27,6 +26,8 @@ namespace Logica {
         /// <param name="outputFunction">funcie die wordt uitgeroepen bij "." commando</param>
         public BfInterpreter(Func<char> inputFunction, Action<string> outputFunction) {
             this.fileLoader = new FileLoader();
+            this.memory = new List<byte>(Int16.MaxValue);
+            for (int i = 0; i < Int16.MaxValue; i++) this.memory.Add(0);
             this.MemoryView = memory.AsReadOnly();
             this.MemoryPointer = 0;
             this.loopPointer = new Stack<int>();

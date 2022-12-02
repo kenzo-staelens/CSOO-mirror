@@ -26,12 +26,12 @@ namespace Globals {
             code = Minimal(code);
             this.Compiled = new Commands[code.Length];
             for (int i = 0; i < code.Length; i++) {
-                this.Compiled[i] = instructionMap[code[i]];
+                this.Compiled[i] = InstructionMap[code[i]];
             }
             this.Length = this.Compiled.Length;
         }
 
-        private static readonly Dictionary<char, Commands> instructionMap = new Dictionary<char, Commands>() {
+        private static readonly Dictionary<char, Commands> InstructionMap = new Dictionary<char, Commands>() {
             { '+', Commands.Inc},
             { '-', Commands.Dec},
             { '<', Commands.Left},
@@ -42,7 +42,6 @@ namespace Globals {
             { ',', Commands.Read},
         };
 
-        public static Dictionary<char, Commands> InstructionMap { get; }
 
         private static string Minimal(string code) {
             return Regex.Replace(code, "[^\\+\\-<>\\.\\,\\[\\]]", "");
