@@ -8,7 +8,7 @@ namespace Logica {
         private Stack<int> loopPointer;
         private int inputPointer;
         private Programdata program;
-        private List<byte> memory;
+        private List<byte> memory;//external read only
 
         /// <see cref="https://learn.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.management.sdk.sfc.ireadonlylist-1?view=sql-smo-160"</see>
         public IReadOnlyList<byte> MemoryView { get; }
@@ -103,7 +103,7 @@ namespace Logica {
                             this.memory[MemoryPointer] = Convert.ToByte(this.PreparedInput[inputPointer]);
                         }
                         else {
-                            this.MemoryView[MemoryPointer] = Convert.ToByte(InputFunction());
+                            this.memory[MemoryPointer] = Convert.ToByte(InputFunction());
                         }
                         break;
                     case Commands.Write:
