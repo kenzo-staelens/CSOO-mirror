@@ -22,8 +22,8 @@ namespace Globals {
         private static readonly Dictionary<char, Commands> instructionMap = new Dictionary<char, Commands>() {
             { '+', Commands.Inc},
             { '-', Commands.Dec},
-            { '>', Commands.Left},
-            { '-', Commands.Right},
+            { '<', Commands.Left},
+            { '>', Commands.Right},
             { '[', Commands.Loop},
             { ']', Commands.Jmp},
             { '.', Commands.Write},
@@ -36,7 +36,7 @@ namespace Globals {
             code = Minimal(code);
             var returnvalue = new Commands[code.Length];
             for(int i =0;i<code.Length;i++) {
-                returnvalue[i] = InstructionMap[code[i]];
+                returnvalue[i] = instructionMap[code[i]];
             }
             return returnvalue;
         }

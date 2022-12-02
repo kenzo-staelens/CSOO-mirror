@@ -13,7 +13,7 @@ namespace Logica {
         public byte[] Memory { get; private set; }
         public Int16 MemoryPointer { get; private set; }
         public Commands[] Program { get; private set; }
-        public char[] PreparedInput { get; set; }
+        public string PreparedInput { get; set; }
         public Func<char> InputFunction { private get;  set; }
         public Action<string> OutputFunction { private get;  set; }
         public Action Tick { private get; set; }
@@ -34,7 +34,7 @@ namespace Logica {
             this.InputFunction = inputFunction;
             this.OutputFunction = outputFunction;
             this.Program = new Commands[0];
-            this.PreparedInput = new char[0];
+            this.PreparedInput = "";
             this.Tick = () => {};
         }
 
@@ -59,20 +59,6 @@ namespace Logica {
         }
 
         /// <summary>
-        /// zet een predefined input voor het uit te voeren programma, als te weinig input is gegeven wordt deze later gevraagd
-        /// </summary>
-        /// <param name="input">meegegeven programma in stringvorm of file path</param>
-        public void PrepareInput(string input) {
-            this.PreparedInput = new char[input.Length];
-            this.Tick();
-            foreach (char c in input) {
-                this.PreparedInput[inputPointer] = c;
-                inputPointer++;
-            }
-            this.inputPointer = 0;
-        }
-
-        /// <summary>
         /// het uitvoeren van het brainfuck programma gebeurt hier
         /// </summary>
         /// <see cref="https://www.w3schools.com/cs/cs_switch.php"/>
@@ -80,6 +66,7 @@ namespace Logica {
         public void Interpret() {
             for (int i = 0; i < this.Program.Length; i++) {
                 Commands cmd = Program[i];
+                //Console.WriteLine(cmd);
                 if(MemoryPointer<0 || MemoryPointer>this.Memory.Length) throw new IndexOutOfRangeException("tried to access index " + MemoryPointer.ToString() + " of memory with size " + Memory.Length.ToString());
                 switch (cmd) {
                     case Commands.Inc:

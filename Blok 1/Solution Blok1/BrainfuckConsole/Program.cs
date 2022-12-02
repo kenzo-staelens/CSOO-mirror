@@ -13,7 +13,7 @@ internal class Program {
         Func<char> Input = () => { Console.Write("input requested: "); return (char)Console.Read(); };
         Action<string> Output = write => { Console.WriteLine(write); };
         BfInterpreter bfinterpreter = new BfInterpreter(Input, Output);
-        string input = "";
+        string input = " ";
         //user input
         while (input!=null && input.Equals("")) {
             Console.WriteLine("Geef een pad of brainfuck programma mee of \"help\": ");
@@ -39,7 +39,12 @@ instructieset
         }
         //bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\program.bf");
         bfinterpreter.LoadProgram(">+++++++++++[-<++++++>]<-.,.");
-        bfinterpreter.PrepareInput("b");
+        bfinterpreter.PreparedInput = "b";
+        bfinterpreter.Memory[1] = 1;
+        bfinterpreter.Memory[2] = 5;
+        Console.WriteLine(bfinterpreter.Memory[1]);
+        Console.WriteLine(bfinterpreter.Memory[2]);
+        Console.WriteLine(bfinterpreter.Memory.Length);
         bfinterpreter.Interpret();
     }
 }
