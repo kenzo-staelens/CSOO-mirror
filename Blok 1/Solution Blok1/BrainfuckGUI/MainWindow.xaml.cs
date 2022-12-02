@@ -17,9 +17,14 @@ namespace BrainfuckGUI {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// <see cref="https://learn.microsoft.com/en-us/visualstudio/get-started/csharp/tutorial-wpf?view=vs-2022"/>
     public partial class MainWindow : Window {
         public MainWindow() {
             InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {//can make function for each button
+            MessageBox.Show(((Button)sender).Content.ToString());
         }
     }
 }
