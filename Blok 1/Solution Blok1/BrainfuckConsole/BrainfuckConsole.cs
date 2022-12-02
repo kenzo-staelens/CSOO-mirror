@@ -40,11 +40,6 @@ instructieset
         //bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\program.bf");
         bfinterpreter.LoadProgram(">+++++++++++[-<++++++>]<-.,.");
         bfinterpreter.PreparedInput = "b";
-        bfinterpreter.Memory[1] = 1;
-        bfinterpreter.Memory[2] = 5;
-        Console.WriteLine(bfinterpreter.Memory[1]);
-        Console.WriteLine(bfinterpreter.Memory[2]);
-        Console.WriteLine(bfinterpreter.Memory.Length);
         bfinterpreter.Interpret();
     }
 }

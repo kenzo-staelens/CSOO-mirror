@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Globals {
@@ -17,7 +18,18 @@ namespace Globals {
         Write,
         Read,
     }
-    public class BrainfuckPrecompiler {
+    public class Programdata {
+
+        public Commands[] Compiled { get; private set; }
+        public int Length { get; private set; }
+        public Programdata(string code) {
+            code = Minimal(code);
+            this.Compiled = new Commands[code.Length];
+            for (int i = 0; i < code.Length; i++) {
+                this.Compiled[i] = instructionMap[code[i]];
+            }
+            this.Length = this.Compiled.Length;
+        }
 
         private static readonly Dictionary<char, Commands> instructionMap = new Dictionary<char, Commands>() {
             { '+', Commands.Inc},
@@ -31,15 +43,6 @@ namespace Globals {
         };
 
         public static Dictionary<char, Commands> InstructionMap { get; }
-
-        public static Commands[] SimpleEncoding(string code) {
-            code = Minimal(code);
-            var returnvalue = new Commands[code.Length];
-            for(int i =0;i<code.Length;i++) {
-                returnvalue[i] = instructionMap[code[i]];
-            }
-            return returnvalue;
-        }
 
         private static string Minimal(string code) {
             return Regex.Replace(code, "[^\\+\\-<>\\.\\,\\[\\]]", "");

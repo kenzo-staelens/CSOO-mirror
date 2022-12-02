@@ -1,6 +1,5 @@
 using Datalaag;
 using Globals;
-using System.Security.Cryptography;
 
 namespace Logica {
     public class BfInterpreter {
@@ -8,11 +7,13 @@ namespace Logica {
         /// <see cref="https://www.tutorialsteacher.com/csharp/csharp-stack"></see>
         private Stack<int> loopPointer;
         private int inputPointer;
-        private Commands[] program;
-        
-        public byte[] Memory { get; private set; }
+        private Programdata program;
+        private List<byte> memory;
+
+        /// <see cref="https://learn.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.management.sdk.sfc.readonlylist-1?view=sql-smo-160"</see>
+        public IReadOnlyList<byte> MemoryView { get; }
         public Int16 MemoryPointer { get; private set; }
-        public Commands[] Program { get; private set; }
+        public Programdata Program { get; private set; }
         public string PreparedInput { get; set; }
         public Func<char> InputFunction { private get;  set; }
         public Action<string> OutputFunction { private get;  set; }
@@ -26,14 +27,14 @@ namespace Logica {
         /// <param name="outputFunction">funcie die wordt uitgeroepen bij "." commando</param>
         public BfInterpreter(Func<char> inputFunction, Action<string> outputFunction) {
             this.fileLoader = new FileLoader();
-            this.Memory = new byte[Int16.MaxValue];
+            this.MemoryView = memory.AsReadOnly();
             this.MemoryPointer = 0;
             this.loopPointer = new Stack<int>();
             this.inputPointer = 0;
 
             this.InputFunction = inputFunction;
             this.OutputFunction = outputFunction;
-            this.Program = new Commands[0];
+            this.Program = new Programdata("");
             this.PreparedInput = "";
             this.Tick = () => {};
         }
@@ -55,7 +56,7 @@ namespace Logica {
             catch (Exception) {
                 loadedProgram = programinput;
             }
-            this.Program = BrainfuckPrecompiler.SimpleEncoding(loadedProgram);
+            this.Program = new Programdata(loadedProgram);
         }
 
         /// <summary>
@@ -65,15 +66,15 @@ namespace Logica {
         /// <see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
         public void Interpret() {
             for (int i = 0; i < this.Program.Length; i++) {
-                Commands cmd = Program[i];
+                Commands cmd = Program.Compiled[i];
                 //Console.WriteLine(cmd);
-                if(MemoryPointer<0 || MemoryPointer>this.Memory.Length) throw new IndexOutOfRangeException("tried to access index " + MemoryPointer.ToString() + " of memory with size " + Memory.Length.ToString());
+                if(MemoryPointer<0 || MemoryPointer>this.MemoryView.Count) throw new IndexOutOfRangeException("tried to access index " + MemoryPointer.ToString() + " of memory with size " + this.MemoryView.Count.ToString());
                 switch (cmd) {
                     case Commands.Inc:
-                        this.Memory[MemoryPointer]++;
+                        this.memory[MemoryPointer]++;
                         break;
                     case Commands.Dec:
-                        this.Memory[MemoryPointer]--;
+                        this.memory[MemoryPointer]--;
                         break;
                     case Commands.Right:
                         this.MemoryPointer++;
@@ -83,30 +84,30 @@ namespace Logica {
                         break;
                     case Commands.Loop:
                         int bracketCount = 0;
-                        if (this.Memory[MemoryPointer] != 0) {
+                        if (this.MemoryView[MemoryPointer] != 0) {
                             this.loopPointer.Push(i);
                         }
                         else {
                             //find index of matching ], dit codeblok hoort namelijk niet te worden uitgevoerd
                             for (int j = i; j < this.Program.Length; j++) {
-                                if (this.Program[i] == Commands.Loop) bracketCount++;
-                                if (this.Program[i]== Commands.Jmp) bracketCount--;
+                                if (this.Program.Compiled[i] == Commands.Loop) bracketCount++;
+                                if (this.Program.Compiled[i]== Commands.Jmp) bracketCount--;
                             }
                         }
                         break;
                     case Commands.Jmp:
-                        if (Memory[MemoryPointer] != 0) i = this.loopPointer.Pop() - 1;
+                        if (this.MemoryView[MemoryPointer] != 0) i = this.loopPointer.Pop() - 1;
                         break;
                     case Commands.Read:
                         if (inputPointer < this.PreparedInput.Length) {
-                            this.Memory[MemoryPointer] = Convert.ToByte(this.PreparedInput[inputPointer]);
+                            this.MemoryView.ElementAt(MemoryPointer) = Convert.ToByte(this.PreparedInput[inputPointer]);
                         }
                         else {
-                            this.Memory[MemoryPointer] = Convert.ToByte(InputFunction());
+                            this.MemoryView.ElementAt(MemoryPointer) = Convert.ToByte(InputFunction());
                         }
                         break;
                     case Commands.Write:
-                        string outp = ((char)this.Memory[MemoryPointer]).ToString();
+                        string outp = ((char)this.MemoryView.ElementAt(MemoryPointer)).ToString();
                         OutputFunction(outp);
                         break;
                 }
