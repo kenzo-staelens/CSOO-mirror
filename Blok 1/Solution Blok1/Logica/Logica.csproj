@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Datalaag\Datalaag.csproj" />
+    <ProjectReference Include="..\Globals\Globals.csproj" />
   </ItemGroup>
 
 </Project>
