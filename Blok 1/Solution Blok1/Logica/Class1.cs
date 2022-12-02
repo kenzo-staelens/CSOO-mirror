@@ -16,7 +16,7 @@ namespace Logica {
         public char[] PreparedInput { get; set; }
         public Func<char> InputFunction { private get;  set; }
         public Action<string> OutputFunction { private get;  set; }
-        public Func<string> SerializedTick { private get; set; }
+        public Action Tick { private get; set; }
 
 
         /// <summary>
@@ -35,6 +35,7 @@ namespace Logica {
             this.OutputFunction = outputFunction;
             this.Program = new Commands[0];
             this.PreparedInput = new char[0];
+            this.Tick = () => {};
         }
 
         /// <summary>
@@ -48,10 +49,10 @@ namespace Logica {
                 Path.GetFullPath(programinput);
                 loadedProgram = this.fileLoader.Load(programinput);
             }
-            catch (FileNotFoundException e){
+            catch (FileNotFoundException){
                 this.OutputFunction("file " + programinput + " could not be found");
             }
-            catch (Exception e) {
+            catch (Exception) {
                 loadedProgram = programinput;
             }
             this.Program = BrainfuckPrecompiler.SimpleEncoding(loadedProgram);
@@ -63,6 +64,7 @@ namespace Logica {
         /// <param name="input">meegegeven programma in stringvorm of file path</param>
         public void PrepareInput(string input) {
             this.PreparedInput = new char[input.Length];
+            this.Tick();
             foreach (char c in input) {
                 this.PreparedInput[inputPointer] = c;
                 inputPointer++;

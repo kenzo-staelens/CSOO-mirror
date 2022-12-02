@@ -15,10 +15,10 @@ internal class Program {
         BfInterpreter bfinterpreter = new BfInterpreter(Input, Output);
         string input = "";
         //user input
-        while (input.Equals("")) {
+        while (input!=null && input.Equals("")) {
             Console.WriteLine("Geef een pad of brainfuck programma mee of \"help\": ");
             input = Console.ReadLine();
-            if (input.ToLower().Equals("help")) {
+            if (input!=null && input.ToLower().Equals("help")) {
                 Console.WriteLine(
 @"Paden
     .\pad\vanaf\huidige\directory
