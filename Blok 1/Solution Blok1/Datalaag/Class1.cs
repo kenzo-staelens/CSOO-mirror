@@ -1,4 +1,6 @@
-﻿namespace Datalaag {
+﻿using System.ComponentModel;
+
+namespace Datalaag {
     public class FileLoader {
         public FileLoader() {}
 
