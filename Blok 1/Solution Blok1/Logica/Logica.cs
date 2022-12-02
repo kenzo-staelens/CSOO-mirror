@@ -10,7 +10,7 @@ namespace Logica {
         private Programdata program;
         private List<byte> memory;
 
-        /// <see cref="https://learn.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.management.sdk.sfc.readonlylist-1?view=sql-smo-160"</see>
+        /// <see cref="https://learn.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.management.sdk.sfc.ireadonlylist-1?view=sql-smo-160"</see>
         public IReadOnlyList<byte> MemoryView { get; }
         public Int16 MemoryPointer { get; private set; }
         public Programdata Program { get; private set; }
