@@ -100,10 +100,10 @@ namespace Logica {
                         break;
                     case Commands.Read:
                         if (inputPointer < this.PreparedInput.Length) {
-                            this.MemoryView.ElementAt(MemoryPointer) = Convert.ToByte(this.PreparedInput[inputPointer]);
+                            this.memory[MemoryPointer] = Convert.ToByte(this.PreparedInput[inputPointer]);
                         }
                         else {
-                            this.MemoryView.ElementAt(MemoryPointer) = Convert.ToByte(InputFunction());
+                            this.MemoryView[MemoryPointer] = Convert.ToByte(InputFunction());
                         }
                         break;
                     case Commands.Write:
