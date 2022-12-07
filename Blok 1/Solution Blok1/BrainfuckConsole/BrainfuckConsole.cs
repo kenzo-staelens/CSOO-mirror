@@ -42,7 +42,10 @@ instructieset
             }
         }
         //bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\gitCSharp\Blok 1\Solution Blok1\user defined resources\bfcode_debug_file.txt");
+        //C:\Users\User\Desktop\gitCSharp\Blok 1\Solution Blok1\user defined resources\bfcode_debug_file.txt
+        //../../../../user defined resources/bfcode_raw.txt
         //bfinterpreter.LoadProgram(">>>+<<<[-[->+>+<<]>>[-<<+>>]<+[->>[->+>+<<]>[->>+<<]>[-<<+>>]<<<<]>>[-]>>>[-<<<+>>>]<<<<<<]>>>");
+
         bfinterpreter.LoadProgram(input);
         bfinterpreter.PreparedInput = "";
         bfinterpreter.Interpret();
