@@ -18,17 +18,25 @@ namespace Globals {
         Write,
         Read,
     }
-    public class Programdata {
+    public struct Programdata {
 
         public Commands[] Compiled { get; private set; }
         public int Length { get; private set; }
         public Programdata(string code) {
-            code = Minimal(code);
+            code = Regex.Replace(code, "[^\\+\\-<>\\.\\,\\[\\]]", "");
             this.Compiled = new Commands[code.Length];
             for (int i = 0; i < code.Length; i++) {
                 this.Compiled[i] = InstructionMap[code[i]];
             }
             this.Length = this.Compiled.Length;
+        }
+
+        public string Serialize() {
+            string returnstr = "";
+            for(int i = 0; i < Compiled.Length; i++) {
+                returnstr += ReverseInstructionMap[Compiled[i]];
+            }
+            return returnstr;
         }
 
         private static readonly Dictionary<char, Commands> InstructionMap = new Dictionary<char, Commands>() {
@@ -42,9 +50,15 @@ namespace Globals {
             { ',', Commands.Read},
         };
 
-
-        private static string Minimal(string code) {
-            return Regex.Replace(code, "[^\\+\\-<>\\.\\,\\[\\]]", "");
-        }
+        private static readonly Dictionary<Commands, char> ReverseInstructionMap = new Dictionary<Commands, char>() {
+            {Commands.Inc, '+'},
+            {Commands.Dec, '-'},
+            {Commands.Left, '<'},
+            {Commands.Right, '>'},
+            {Commands.Loop, '['},
+            {Commands.Jmp, ']'},
+            {Commands.Write, '.'},
+            {Commands.Read, ','},
+        };
     }
 }

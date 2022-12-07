@@ -11,8 +11,12 @@ internal class Program {
     private static void Main(string[] args) {
         //setup
         Func<char> Input = () => { Console.Write("input requested: "); return (char)Console.Read(); };
-        Action<string> Output = write => { Console.WriteLine(write); };
+        Action<string> Output = write => { Console.Write(write); };
+        
         BfInterpreter bfinterpreter = new BfInterpreter(Input, Output);
+        Action tick = () => { };// { Console.WriteLine(bfinterpreter.Program.Serialize()); Console.WriteLine(new string(' ',bfinterpreter.ProgramPointer)+"^");};
+        bfinterpreter.Tick = tick;
+
         string input = " ";
         //user input
         while (input!=null && input.Equals("")) {
@@ -37,9 +41,10 @@ instructieset
                 input = "";
             }
         }
-        //bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\program.bf");
-        bfinterpreter.LoadProgram(">+++++++++++[-<++++++>]<-.,.");
-        bfinterpreter.PreparedInput = "b";
+        bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\program.bf");
+        //bfinterpreter.LoadProgram(">>>+<<<[-[->+>+<<]>>[-<<+>>]<+[->>[->+>+<<]>[->>+<<]>[-<<+>>]<<<<]>>[-]>>>[-<<<+>>>]<<<<<<]>>>");
+        //bfinterpreter.LoadProgram(input);
+        bfinterpreter.PreparedInput = "";
         bfinterpreter.Interpret();
     }
 }
