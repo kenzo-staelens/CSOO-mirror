@@ -119,15 +119,6 @@ namespace Logica {
                         OutputFunction(outp);
                         break;
                 }
-                /*Console.WriteLine(cmd);
-                Console.Write(this.MemoryView[0] + " ");
-                Console.Write(this.MemoryView[1] + " ");
-                Console.Write(this.MemoryView[2] + " ");
-                Console.Write(this.MemoryView[3] + " ");
-                Console.Write(this.MemoryView[4] + " ");
-                Console.Write(this.MemoryView[5] + " ");
-                Console.Write(this.MemoryView[6] + " ");
-                Console.WriteLine("");*/
                 ProgramPointer++;
             }
         }

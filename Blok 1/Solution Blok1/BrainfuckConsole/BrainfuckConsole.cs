@@ -17,7 +17,7 @@ internal class Program {
         Action tick = () => { };// { Console.WriteLine(bfinterpreter.Program.Serialize()); Console.WriteLine(new string(' ',bfinterpreter.ProgramPointer)+"^");};
         bfinterpreter.Tick = tick;
 
-        string input = " ";
+        string input = "";
         //user input
         while (input!=null && input.Equals("")) {
             Console.WriteLine("Geef een pad of brainfuck programma mee of \"help\": ");
@@ -41,9 +41,9 @@ instructieset
                 input = "";
             }
         }
-        bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\program.bf");
+        //bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\gitCSharp\Blok 1\Solution Blok1\user defined resources\bfcode_debug_file.txt");
         //bfinterpreter.LoadProgram(">>>+<<<[-[->+>+<<]>>[-<<+>>]<+[->>[->+>+<<]>[->>+<<]>[-<<+>>]<<<<]>>[-]>>>[-<<<+>>>]<<<<<<]>>>");
-        //bfinterpreter.LoadProgram(input);
+        bfinterpreter.LoadProgram(input);
         bfinterpreter.PreparedInput = "";
         bfinterpreter.Interpret();
     }
