@@ -48,32 +48,47 @@ namespace Logica {
         /// <see cref="https://stackoverflow.com/questions/3137097/check-if-a-string-is-a-valid-windows-directory-folder-path"></see>
         public void LoadProgram(string programinput) {
             string loadedProgram = "";
+            if (programinput == null) programinput = "";
             try {
                 Path.GetFullPath(programinput);
                 loadedProgram = this.fileLoader.Load(programinput);
             }
-            catch (FileNotFoundException) {
+            catch (Exception) {
                 loadedProgram = programinput;
-            }
-            catch (Exception e) {
-                Console.WriteLine(e.ToString());
-                this.OutputFunction("file " + programinput + " could not be found");
             }
             this.Program = new Programdata(loadedProgram);
         }
 
+        public string LoadRaw(string path) {
+            try {
+                Path.GetFullPath(path);
+                return fileLoader.Load(path);
+            }
+            catch (Exception) {
+                return "";
+            }
+        }
+
+        public void Save(string filename, string text) {
+            fileLoader.Save(filename, text);
+        }
+
+        public void reset() {
+            this.ProgramPointer = 0;
+            for (int i = 0; i < this.memory.Count; i++) this.memory[i] = 0;
+        }
+
         public void Interpret() {
+            reset();
             while (ProgramPointer < this.Program.Length) {
-                Tick();
-                Commands cmd = Program.Compiled[ProgramPointer];
-                Step(cmd);
-                ProgramPointer++;
+                Step();
             }
         }
 
         public void Step() {
             Commands cmd = Program.Compiled[ProgramPointer];
             Step(cmd);
+            ProgramPointer++;
         }
 
         /// <summary>
@@ -83,6 +98,7 @@ namespace Logica {
         /// <see cref="https://www.c-sharpcorner.com/UploadFile/mahesh/convert-char-to-byte-in-C-Sharp/"></see>
         private void Step(Commands cmd) {
             if (MemoryPointer < 0 || MemoryPointer > this.MemoryView.Count) throw new IndexOutOfRangeException("tried to access index " + MemoryPointer.ToString() + " of memory with size " + this.MemoryView.Count.ToString());
+            Tick();
             switch (cmd) {
                 case Commands.Inc:
                     this.memory[MemoryPointer]++;

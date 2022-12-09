@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using Logica;
+using Microsoft.Win32;
 
 namespace BrainfuckGUI {
     /// <summary>
@@ -26,40 +29,101 @@ namespace BrainfuckGUI {
         private Action Tick;
         BfInterpreter interpreter;
         public string TextInput {get; set;}
+        public int Delaytime { get; private set; }
 
         public MainWindow() {
-            
-            
             InitializeComponent();
+            Delaytime = 0;
             Input = () => {
                 InputBox dialogBox = new InputBox();
                 string dialogResult = dialogBox.ShowDialog();
-                return (dialogResult == null ? '\n' : dialogResult[0]);
+                return (dialogResult == null || dialogResult.Length==0) ? '\n' : dialogResult[0];
             };
-            Output = write => { OutputBox.Text = OutputBox.Text + write; Console.WriteLine(write); };
-            Tick = () => { };
+            Output = write => { OutputBox.Text = OutputBox.Text + write; };
+            Tick = () => {
+                string serialized = interpreter.Program.Serialize();
+                int pointer = interpreter.ProgramPointer;
+                string t = serialized.Substring(0, pointer) + "\"" +
+                serialized.Substring(pointer, 1) + "\""  +
+                serialized.Substring(pointer+ 1, serialized.Length - pointer - 1);
+                RunningCode.Text = t;
+                Task.Delay(Delaytime);
+            };
             interpreter = new BfInterpreter(Input, Output);
             interpreter.Tick = Tick;
+
+            ToHideLabel.Visibility = Visibility.Collapsed;
+            Delay.Visibility = Visibility.Collapsed;//implementatie werkt nog niet helemaal
+
         }
 
         private void Run(object sender, RoutedEventArgs e) {
+            try {
+                Delaytime = Int32.Parse(Delay.Text);
+                Tick = () => {
+                    string serialized = interpreter.Program.Serialize();
+                    int pointer = interpreter.ProgramPointer;
+                    string t = serialized.Substring(0, pointer) + "\"" +
+                    serialized.Substring(pointer, 1) + "\"" +
+                    serialized.Substring(pointer + 1, serialized.Length - pointer - 1);
+                    RunningCode.Text = t;
+                    Task.Delay(Delaytime);
+                };
+                interpreter.Tick = Tick;
+            }
+            catch {
+                MessageBox.Show("Error while parsing "+Delay.Text + " to number", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            Reset(sender, e);
             CodeBox.IsReadOnly = true;
             MemViewBtn.IsEnabled = true;
+            interpreter.Interpret();
+            CodeBox.IsReadOnly = false;
+        }
+        private void Clear(object sender, RoutedEventArgs e) {
+            CodeBox.Text = "";
+        }
+        private void Save(object sender, RoutedEventArgs e) {
+            var dlg = new SaveFileDialog();
+            dlg.Filter = "*.bf|*.txt";
+            bool OK = (bool)dlg.ShowDialog();
+            if (!OK) return;
+            interpreter.Save(dlg.FileName, CodeBox.Text);
+        }
+        private void Load(object sender, RoutedEventArgs e) {
+            var dlg = new OpenFileDialog();
+            dlg.Filter = "*.bf|*.txt";
+            bool OK = (bool)dlg.ShowDialog();
+            if(!OK ) return;
+            string filename = dlg.FileName;
+            CodeBox.Text = interpreter.LoadRaw(dlg.FileName);
+            Reset(sender, e);
+        }
+
+        private void Step(object sender, RoutedEventArgs e) {
+            try {
+                interpreter.Step();
+            }
+            catch(Exception ex) {
+                MessageBox.Show(ex.Message + "\ntry clicking the reset button", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+        }
+        private void Memview(object sender, RoutedEventArgs e) {
+            OutputBox.Text = "";
+            foreach(byte b in interpreter.MemoryView) {
+                OutputBox.Text += b.ToString() + " | ";
+            }
+        }
+
+        private void Reset(object sender, RoutedEventArgs e) {
             interpreter.LoadProgram(CodeBox.Text);
             RunningCode.Text = interpreter.Program.Serialize();
             OutputBox.Text = "";
-            RunBtn.Content = "pause";
-            interpreter.Interpret();
-            CodeBox.IsReadOnly = false;
             MemViewBtn.IsEnabled = false;
+            interpreter.reset();
         }
-        private void Clear(object sender, RoutedEventArgs e) { }
-        private void Save(object sender, RoutedEventArgs e) { }
-        private void Load(object sender, RoutedEventArgs e) { }
-        private void Step(object sender, RoutedEventArgs e) {//+++++++++++[->++++++<]-,.
-            interpreter.Step();
-        }
-        private void Memview(object sender, RoutedEventArgs e) { }
         
     }
 
@@ -72,8 +136,6 @@ namespace BrainfuckGUI {
         StackPanel sp1 = new StackPanel();// items container
         string title = "InputBox";//title as heading
         string defaulttext = "Input...";//default textbox content
-        string errormessage = "Invalid answer";//error messagebox content
-        string errortitle = "Error";//error messagebox heading title
         string okbuttontext = "OK";//Ok button content
         bool clicked = false;
         TextBox input = new TextBox();
@@ -128,11 +190,8 @@ namespace BrainfuckGUI {
 
         void ok_Click(object sender, RoutedEventArgs e) {
             clicked = true;
-            if (input.Text == defaulttext || input.Text == "")
-                MessageBox.Show(errormessage, errortitle);
-            else {
-                Box.Close();
-            }
+            if (input.Text == defaulttext || input.Text == "") input.Text = "";
+            Box.Close();
             clicked = false;
         }
 

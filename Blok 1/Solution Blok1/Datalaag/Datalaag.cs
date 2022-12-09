@@ -13,5 +13,14 @@ namespace Datalaag {
         public string Load(string filename) {
             return System.IO.File.ReadAllText(filename);
         }
+
+        public void Save(string filename,string text) {
+            if (!File.Exists(filename)) {
+                File.Create(filename);
+            }
+            using (StreamWriter writer = new StreamWriter(filename, false)) {
+                writer.Write(text);
+            }
+        }
     }
 }

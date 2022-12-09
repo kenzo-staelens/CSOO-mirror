@@ -5,22 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BrainfuckGUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="460" Width="800">
+        Title="MainWindow" Height="560" Width="800">
     <Grid>
-        <TextBox Name="CodeBox"  HorizontalAlignment="Left" Margin="25,30,0,0" TextWrapping="Wrap" Text="[hint: comments kunnen worden geschreven door loops te starten op cells met 0 als waarde&#x0d;&#x0a;hierdoor wordt de loop niet uitgevoerd, eveneens wordt text behalve &lt;&gt;+-[] en ., niet uitgevoerd&#x0d;&#x0a;volgende programma demonstreerd hello world]&#x0d;&#x0a;+[++[&lt;+++&gt;->+++&lt;]&gt;+++++++]&lt;&lt;&lt;--.&lt;.&lt;--..&lt;&lt;---.&lt;+++.&lt;+.&gt;&gt;.&gt;+.&gt;.&gt;-.&lt;&lt;&lt;&lt;+.[&lt;]&gt;+."
+        <TextBox Name="CodeBox"  HorizontalAlignment="Left" Margin="25,30,0,0" TextWrapping="Wrap" Text="[hint: comments kunnen worden geschreven door loops te starten op cells met 0 als waarde&#x0d;&#x0a;hierdoor wordt de loop niet uitgevoerd, eveneens wordt text behalve &lt;&gt;+-[] en ., niet uitgevoerd&#x0d;&#x0a;volgende programma demonstreerd hello world]&#x0d;&#x0a;&gt;++++++++[&lt;+++++++++&gt;-]&lt;.&gt;++++[&lt;+++++++&gt;-]&lt;+.+++++++..+++.&gt;&gt;++++++[&lt;+++++++&gt;-]&lt;++.------------.&gt;++++++[&lt;+++++++++&gt;-]&lt;+.&lt;.+++.------.--------.&gt;&gt;&gt;++++[&lt;++++++++&gt;-]&lt;+."
                  AcceptsReturn="True" VerticalAlignment="Top" Width="550" Height="200" />
         <Button Name="RunBtn" Content="run" HorizontalAlignment="Left" Margin="700,30,0,0" VerticalAlignment="Top" Width="80" Click="Run"/>
-        <Button Content="new" HorizontalAlignment="Left" Margin="700,60,0,0" VerticalAlignment="Top" Width="80" Click="Clear"/>
+        <Button Content="clear" HorizontalAlignment="Left" Margin="700,60,0,0" VerticalAlignment="Top" Width="80" Click="Clear"/>
         <Button Content="save" HorizontalAlignment="Left" Margin="600,60,0,0" VerticalAlignment="Top" Width="80" Click="Save"/>
         <Button Content="load" HorizontalAlignment="Left" Margin="600,30,0,0" VerticalAlignment="Top" Width="80" Click="Load"/>
         <Button Content="step" HorizontalAlignment="Left" Margin="600,90,0,0" VerticalAlignment="Top" Width="80" Click="Step"/>
+        <Button Content="reset" HorizontalAlignment="Left" Margin="700,120,0,0" VerticalAlignment="Top" Width="80" Click="Reset"/>
+
+        <Label Name="ToHideLabel"  Content="Delay: " HorizontalAlignment="Left" Margin="600,150,0,0" VerticalAlignment="Top" Width="80"/>
+        <TextBox Name ="Delay" Text="0" HorizontalAlignment="Left" Margin="700,155,0,0" VerticalAlignment="Top" Width="80"/>
+
         <Button Name="MemViewBtn" Content="view memory" HorizontalAlignment="Left" Margin="700,90,0,0" VerticalAlignment="Top" Width="80"
                 IsEnabled="False" Click="Memview"/>
         <TextBlock Name="RunningCode" HorizontalAlignment="Left" Margin="25,250,0,0" TextWrapping="Wrap" Text="Click run." VerticalAlignment="Top"
-                   Width="550" Height="40"/>
-        <TextBlock Name="OutputBox" HorizontalAlignment="Left" Margin="25,300,0,0" TextWrapping="Wrap" VerticalAlignment="Top"
-                   Width="550" Height="110" Background="Black" Foreground="White" Padding="5"/>
-
-
+                   Width="550" Height="90"/>
+        <TextBlock Name="OutputBox" HorizontalAlignment="Left" Margin="25,350,0,0" TextWrapping="Wrap" VerticalAlignment="Top"
+                   Width="550" Height="160" Background="Black" Foreground="White" Padding="5"/>
     </Grid>
 </Window>
