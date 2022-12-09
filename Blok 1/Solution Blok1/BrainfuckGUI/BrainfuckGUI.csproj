@@ -7,4 +7,9 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Globals\Globals.csproj" />
+    <ProjectReference Include="..\Logica\Logica.csproj" />
+  </ItemGroup>
+
 </Project>
