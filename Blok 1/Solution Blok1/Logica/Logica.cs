@@ -2,6 +2,12 @@ using Datalaag;
 using Globals;
 
 namespace Logica {
+    public enum State {
+        RUNNING,
+        PAUSED,
+        STOPPED
+    }
+
     public class BfInterpreter {
         private FileLoader fileLoader;
         /// <see cref="https://www.tutorialsteacher.com/csharp/csharp-stack"></see>
@@ -18,6 +24,7 @@ namespace Logica {
         public Action<string> OutputFunction { private get; set; }
         public Action Tick { private get; set; }
         public int ProgramPointer { get; private set; }
+        public State RunningState { get; set; }
 
         /// <summary>
         /// setup interne parameters voor programma
@@ -39,6 +46,7 @@ namespace Logica {
             this.Program = new Programdata("");
             this.PreparedInput = "";
             this.Tick = () => { };
+            this.RunningState = State.STOPPED;
         }
 
         /// <summary>
@@ -73,19 +81,34 @@ namespace Logica {
             fileLoader.Save(filename, text);
         }
 
-        public void reset() {
+        public void Reset() {
+            this.RunningState = State.STOPPED;
             this.ProgramPointer = 0;
+            this.loopPointer.Clear();
             for (int i = 0; i < this.memory.Count; i++) this.memory[i] = 0;
         }
 
-        public void Interpret() {
-            reset();
-            while (ProgramPointer < this.Program.Length) {
-                Step();
+        public async Task InterpretWithSleep(int sleepduration) {
+            if (this.RunningState == State.STOPPED) {
+                Reset();
+                this.RunningState = State.RUNNING;
             }
+            while (this.RunningState == State.RUNNING && ProgramPointer < this.Program.Length) {
+                Step();
+                await Task.Delay(sleepduration);
+            }
+            if (this.RunningState == State.RUNNING) this.RunningState = State.STOPPED;
+        }
+
+        public void Interpret() {
+            InterpretWithSleep(0);
         }
 
         public void Step() {
+            if (this.RunningState == State.STOPPED) {
+                Reset();
+                this.RunningState = State.PAUSED;
+            }
             Commands cmd = Program.Compiled[ProgramPointer];
             Step(cmd);
             ProgramPointer++;

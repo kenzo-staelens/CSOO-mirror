@@ -14,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.Threading;
 
 using Logica;
 using Microsoft.Win32;
@@ -47,39 +49,37 @@ namespace BrainfuckGUI {
                 serialized.Substring(pointer, 1) + "\""  +
                 serialized.Substring(pointer+ 1, serialized.Length - pointer - 1);
                 RunningCode.Text = t;
-                Task.Delay(Delaytime);
             };
             interpreter = new BfInterpreter(Input, Output);
             interpreter.Tick = Tick;
-
-            ToHideLabel.Visibility = Visibility.Collapsed;
-            Delay.Visibility = Visibility.Collapsed;//implementatie werkt nog niet helemaal
-
+            MemViewBtn.IsEnabled = true;
         }
 
-        private void Run(object sender, RoutedEventArgs e) {
+        private async void Run(object sender, RoutedEventArgs e) {
+            if(interpreter.RunningState==State.STOPPED) Reset(sender, e);
+            RunBtn.Content = "pause";
+            if (interpreter.RunningState == State.RUNNING) {
+                RunBtn.Content = "continue";
+                interpreter.RunningState = State.PAUSED;
+            }
+            else if(interpreter.RunningState == State.PAUSED){
+                RunBtn.Content = "pause";
+                interpreter.RunningState = State.RUNNING;
+            }
+
             try {
-                Delaytime = Int32.Parse(Delay.Text);
-                Tick = () => {
-                    string serialized = interpreter.Program.Serialize();
-                    int pointer = interpreter.ProgramPointer;
-                    string t = serialized.Substring(0, pointer) + "\"" +
-                    serialized.Substring(pointer, 1) + "\"" +
-                    serialized.Substring(pointer + 1, serialized.Length - pointer - 1);
-                    RunningCode.Text = t;
-                    Task.Delay(Delaytime);
-                };
-                interpreter.Tick = Tick;
+                this.Delaytime = Int32.Parse(Delay.Text);
             }
             catch {
-                MessageBox.Show("Error while parsing "+Delay.Text + " to number", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Error while parsing "+Delay.Text + " to number", "Alert", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            Reset(sender, e);
-            CodeBox.IsReadOnly = true;
+
+            CodeBox.IsEnabled = false;
             MemViewBtn.IsEnabled = true;
-            interpreter.Interpret();
-            CodeBox.IsReadOnly = false;
+            await interpreter.InterpretWithSleep(this.Delaytime);
+            CodeBox.IsEnabled = true;
+            if(interpreter.RunningState==State.STOPPED) RunBtn.Content = "run";
         }
         private void Clear(object sender, RoutedEventArgs e) {
             CodeBox.Text = "";
@@ -106,15 +106,36 @@ namespace BrainfuckGUI {
                 interpreter.Step();
             }
             catch(Exception ex) {
-                MessageBox.Show(ex.Message + "\ntry clicking the reset button", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(ex.Message + "\ntry clicking the reset button", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
         }
         private void Memview(object sender, RoutedEventArgs e) {
-            OutputBox.Text = "";
-            foreach(byte b in interpreter.MemoryView) {
-                OutputBox.Text += b.ToString() + " | ";
+            string txt = "";
+            string format = "{0,5}:  {1,3}";
+            for (int i = 2; i <= 10; i++) { format += " | {" + i.ToString() + ",3}"; }
+            for (int i=0; i<interpreter.MemoryView.Count-10;i+=10) {
+                string formatted = String.Format(format,
+                    i, interpreter.MemoryView[i], interpreter.MemoryView[i + 1], interpreter.MemoryView[i + 2],
+                    interpreter.MemoryView[i + 3], interpreter.MemoryView[i + 4], interpreter.MemoryView[i + 5],
+                    interpreter.MemoryView[i + 6], interpreter.MemoryView[i + 7], interpreter.MemoryView[i + 8], interpreter.MemoryView[i+9]);
+                txt += formatted + "\n";
             }
+            int start = (int)Math.Floor((decimal)interpreter.MemoryView.Count/10)*10;
+            string[] temp = new string[interpreter.MemoryView.Count-start+1];
+            for (int i = 1; i<temp.Length; i++) {
+                try {//niet mooi rond einde op array size (default int16.MaxValue = 32767)
+                    temp[i] = interpreter.MemoryView[start+i].ToString();
+                }
+                catch {
+                    temp[i] = "";
+                }
+            }
+            format = "{0, 5}:  {1, 3}";
+            temp[0] = start.ToString();
+            for (int i = 2; i < temp.Length-1; i++) { format += " | {" + i.ToString() + ",3}"; }
+            txt += String.Format(format, temp);
+            OutputBox.Text += txt+"\n";
         }
 
         private void Reset(object sender, RoutedEventArgs e) {
@@ -122,7 +143,7 @@ namespace BrainfuckGUI {
             RunningCode.Text = interpreter.Program.Serialize();
             OutputBox.Text = "";
             MemViewBtn.IsEnabled = false;
-            interpreter.reset();
+            interpreter.Reset();
         }
         
     }
@@ -200,4 +221,6 @@ namespace BrainfuckGUI {
             return input.Text;
         }
     }
+
+
 }

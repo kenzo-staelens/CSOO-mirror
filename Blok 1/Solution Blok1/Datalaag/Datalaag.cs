@@ -15,9 +15,7 @@ namespace Datalaag {
         }
 
         public void Save(string filename,string text) {
-            if (!File.Exists(filename)) {
-                File.Create(filename);
-            }
+            if (!File.Exists(filename)) File.Create(filename).Close();
             using (StreamWriter writer = new StreamWriter(filename, false)) {
                 writer.Write(text);
             }

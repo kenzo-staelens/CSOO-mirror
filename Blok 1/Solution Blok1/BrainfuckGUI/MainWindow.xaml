@@ -15,15 +15,16 @@
         <Button Content="load" HorizontalAlignment="Left" Margin="600,30,0,0" VerticalAlignment="Top" Width="80" Click="Load"/>
         <Button Content="step" HorizontalAlignment="Left" Margin="600,90,0,0" VerticalAlignment="Top" Width="80" Click="Step"/>
         <Button Content="reset" HorizontalAlignment="Left" Margin="700,120,0,0" VerticalAlignment="Top" Width="80" Click="Reset"/>
-
-        <Label Name="ToHideLabel"  Content="Delay: " HorizontalAlignment="Left" Margin="600,150,0,0" VerticalAlignment="Top" Width="80"/>
-        <TextBox Name ="Delay" Text="0" HorizontalAlignment="Left" Margin="700,155,0,0" VerticalAlignment="Top" Width="80"/>
-
-        <Button Name="MemViewBtn" Content="view memory" HorizontalAlignment="Left" Margin="700,90,0,0" VerticalAlignment="Top" Width="80"
+        <Button Name="MemViewBtn" Content="print memory" HorizontalAlignment="Left" Margin="700,90,0,0" VerticalAlignment="Top" Width="80"
                 IsEnabled="False" Click="Memview"/>
+        
+        <Label Name="ToHideLabel"  Content="Delay(ms): " HorizontalAlignment="Left" Margin="600,150,0,0" VerticalAlignment="Top" Width="80"/>
+        <TextBox Name ="Delay" Text="1000" HorizontalAlignment="Left" Margin="700,155,0,0" VerticalAlignment="Top" Width="80"/>
+
         <TextBlock Name="RunningCode" HorizontalAlignment="Left" Margin="25,250,0,0" TextWrapping="Wrap" Text="Click run." VerticalAlignment="Top"
                    Width="550" Height="90"/>
-        <TextBlock Name="OutputBox" HorizontalAlignment="Left" Margin="25,350,0,0" TextWrapping="Wrap" VerticalAlignment="Top"
-                   Width="550" Height="160" Background="Black" Foreground="White" Padding="5"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Width="550" Height="160" Margin="25,350,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+            <TextBlock Name="OutputBox" FontFamily="Courier New" TextWrapping="Wrap" Width="550" Background="Black" Foreground="White"/>
+        </ScrollViewer>
     </Grid>
 </Window>
