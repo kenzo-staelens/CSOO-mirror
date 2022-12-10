@@ -30,7 +30,6 @@ namespace BrainfuckGUI {
         private Action<string> Output;
         private Action Tick;
         BfInterpreter interpreter;
-        public string TextInput {get; set;}
         public int Delaytime { get; private set; }
 
         public MainWindow() {
@@ -43,6 +42,7 @@ namespace BrainfuckGUI {
             };
             Output = write => { OutputBox.Text = OutputBox.Text + write; };
             Tick = () => {
+                if (interpreter == null) throw new NullReferenceException("missing interpreter");
                 string serialized = interpreter.Program.Serialize();
                 int pointer = interpreter.ProgramPointer;
                 string t = serialized.Substring(0, pointer) + "\"" +
@@ -87,15 +87,15 @@ namespace BrainfuckGUI {
         private void Save(object sender, RoutedEventArgs e) {
             var dlg = new SaveFileDialog();
             dlg.Filter = "brainfuck files (*.bf)|*.bf|text files (*.txt)|*.txt";
-            bool OK = (bool)dlg.ShowDialog();
-            if (!OK) return;
+            bool? OK = dlg.ShowDialog();
+            if (OK!=null && !(bool)OK) return;
             interpreter.Save(dlg.FileName, CodeBox.Text);
         }
         private void Load(object sender, RoutedEventArgs e) {
             var dlg = new OpenFileDialog();
             dlg.Filter = "brainfuck files (*.bf)|*.bf|text files (*.txt)|*.txt";
-            bool OK = (bool)dlg.ShowDialog();
-            if(!OK ) return;
+            bool? OK = dlg.ShowDialog();
+            if(OK!=null && !(bool)OK ) return;
             string filename = dlg.FileName;
             CodeBox.Text = interpreter.LoadRaw(dlg.FileName);
             Reset(sender, e);

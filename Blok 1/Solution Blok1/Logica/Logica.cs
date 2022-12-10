@@ -100,8 +100,8 @@ namespace Logica {
             if (this.RunningState == State.RUNNING) this.RunningState = State.STOPPED;
         }
 
-        public void Interpret() {
-            InterpretWithSleep(0);
+        public async void Interpret() {
+            await InterpretWithSleep(0);
         }
 
         public void Step() {
