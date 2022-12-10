@@ -86,14 +86,14 @@ namespace BrainfuckGUI {
         }
         private void Save(object sender, RoutedEventArgs e) {
             var dlg = new SaveFileDialog();
-            dlg.Filter = "*.bf|*.txt";
+            dlg.Filter = "brainfuck files (*.bf)|*.bf|text files (*.txt)|*.txt";
             bool OK = (bool)dlg.ShowDialog();
             if (!OK) return;
             interpreter.Save(dlg.FileName, CodeBox.Text);
         }
         private void Load(object sender, RoutedEventArgs e) {
             var dlg = new OpenFileDialog();
-            dlg.Filter = "*.bf|*.txt";
+            dlg.Filter = "brainfuck files (*.bf)|*.bf|text files (*.txt)|*.txt";
             bool OK = (bool)dlg.ShowDialog();
             if(!OK ) return;
             string filename = dlg.FileName;
