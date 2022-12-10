@@ -17,12 +17,12 @@ internal class Program {
         Action tick = () => { };// { Console.WriteLine(bfinterpreter.Program.Serialize()); Console.WriteLine(new string(' ',bfinterpreter.ProgramPointer)+"^");};
         bfinterpreter.Tick = tick;
 
-        string input = "";
+        string? input = "";
         //user input
-        while (input!=null && input.Equals("")) {
+        while (input==null || input.Equals("")) {
             Console.WriteLine("Geef een pad of brainfuck programma mee of \"help\": ");
             input = Console.ReadLine();
-            if (input!=null && input.ToLower().Equals("help")) {
+            if (input==null || input.ToLower().Equals("help")) {
                 Console.WriteLine(
 @"Paden
     .\pad\vanaf\huidige\directory
