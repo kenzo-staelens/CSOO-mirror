@@ -1,0 +1,76 @@
+C# OO - verslag codereview
+==========================
+
+Naam reviewer:	Ruben Schoonbaert
+Datum review:  14-12-2022
+
+Beoordeelde code
+----------------
+
+Auteur: Kenzo Staelens
+Titel: Brainfuck
+Datum code: 3963a5c2 
+
+
+Programmeerstijl
+----------------
+
+<
+Volgt de code de huisregels (minstens voor volgende aspecten):
+
+- naamgeving variabelen (conventies & zinvolle namen)
+Ok het zijn allemaal zinvolle namen en de hoofdletter stijl is correct.
+- naamgeving methodes (conventies & zinvolle namen)
+De naamgeving is hier ook allemaal zinvol
+- layout (gebruik accolades en inspringen)
+De acolades zijn hier allemaal consequent geplaatst, er is wel niet overal een spatie tussen de dilemiter ("//" en het bijschrift).
+- geen publieke velden (properties waar nodig)
+OK. Alle intern gebruikte velden zijn private
+- korte methodes (< 25 lijnen), 'single responisbility rule'
+Alle methoden blijven kort. Alleen de step methode is redelijk lang maar ik zie geen reden om dit in meerdere methodes te zetten aangezien het 1 grote switch statement is.
+>
+
+commentaar:
+
+<eventueel commentaar, uitleg, vragen>
+/
+
+Structuur
+---------
+
+<Is de structuur van de code logisch, en goed te begrijpen?>
+
+commentaar:
+De code is leesbaar verdeeld en is goed gegroepeerd. 
+
+<eventueel commentaar, uitleg, vragen>
+In logica.cs gebruik je een aantal keer Int16 je zou dit ook kunnen declareren als een short.
+je gebruikt veel "this." waar het onnodig is. Is dit een stijlkeuze of voor redundantie?
+
+Userinterface
+-------------
+
+<Is de userinterface logisch? intuitief? gemakkelijk bruikbaar?>
+
+De userinterface is logisch maar niet zo goed uitgelegd, ik had moeite met uitzoeken wat nu juist de functie van welke knop was.
+Je zou dit kunnen oplossen door bijvoorbeeld wat uitleg toe te voegen met behulp van een mouse hover event over de knoppen.
+Er zou ook wat uitleg kunnen staan bij de verschillende velden 
+
+Analyse methode1 & methode 2
+----------------------------
+
+<Kies 2 methodes uit verschillende delen van de code en beoordeel de juistheid  en efficiëntie ervan >
+
+methode 1:  <Datalaag, load>
+commentaar: <eventueel commentaar, uitleg, vragen>
+
+Er is geen limiet voor hoe groot het bestand dat ingeladen wordt kan zijn. 
+Dit kan er voor zorgen dat het project crashed als er een te groot bestand wordt ingeladen.
+Je zou dit eventueel kunnen oplossen met gebruik van een Fileinfo.Length property in een if statement.
+
+methode 2:  <MainWindow.xaml.cs, Load>
+
+commentaar: <eventueel commentaar, uitleg, vragen>
+Op lijn 99 declareer je dat "string filename = dlg.FileName;". 
+Maar in de lijn er onder gebruik je nogsteeds dlg.FileName idpv filename. 
+Dus is dit redundant.

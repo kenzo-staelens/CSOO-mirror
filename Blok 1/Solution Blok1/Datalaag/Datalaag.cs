@@ -11,6 +11,8 @@ namespace Datalaag {
         /// <returns>string file data</returns>
         /// <see cref="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/file-system/how-to-read-from-a-text-file"/>
         public string Load(string filename) {
+            if (!File.Exists(filename)) return "";
+            if ((new FileInfo(filename)).Length >100000) throw new IOException("file too large");
             return System.IO.File.ReadAllText(filename);
         }
 

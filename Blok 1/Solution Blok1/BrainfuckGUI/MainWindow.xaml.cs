@@ -96,7 +96,6 @@ namespace BrainfuckGUI {
             dlg.Filter = "brainfuck files (*.bf)|*.bf|text files (*.txt)|*.txt";
             bool? OK = dlg.ShowDialog();
             if(OK!=null && !(bool)OK ) return;
-            string filename = dlg.FileName;
             CodeBox.Text = interpreter.LoadRaw(dlg.FileName);
             Reset(sender, e);
         }
