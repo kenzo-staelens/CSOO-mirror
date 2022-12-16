@@ -1,4 +1,5 @@
 ﻿using Logica;
+using Globals;
 
 internal class Program {
     private static void Main(string[] args) {
