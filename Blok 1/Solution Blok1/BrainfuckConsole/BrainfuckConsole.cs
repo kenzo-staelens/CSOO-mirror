@@ -9,7 +9,7 @@ internal class Program {
     /// <see cref="https://stackoverflow.com/questions/70665003/what-is-the-c-sharp-equivalent-of-java-util-function-supplier"/>
     /// <see cref="https://stackoverflow.com/questions/36449343/what-is-the-c-sharp-equivalent-of-java-8-java-util-function-consumer"/>
     private static void Main(string[] args) {
-        //setup
+        // setup
         Func<char> Input = () => { Console.Write("input requested: "); return (char)Console.Read(); };
         Action<string> Output = write => { Console.Write(write); };
         
@@ -18,7 +18,7 @@ internal class Program {
         bfinterpreter.Tick = tick;
 
         string? input = "";
-        //user input
+        // user input
         while (input==null || input.Equals("")) {
             Console.WriteLine("Geef een pad of brainfuck programma mee of \"help\": ");
             input = Console.ReadLine();
@@ -41,9 +41,9 @@ instructieset
                 input = "";
             }
         }
-        //bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\gitCSharp\Blok 1\Solution Blok1\user defined resources\bfcode_debug_file.txt");
-        //C:\Users\User\Desktop\gitCSharp\Blok 1\Solution Blok1\user defined resources\bfcode_debug_file.txt
-        //bfinterpreter.LoadProgram(">>>+<<<[-[->+>+<<]>>[-<<+>>]<+[->>[->+>+<<]>[->>+<<]>[-<<+>>]<<<<]>>[-]>>>[-<<<+>>>]<<<<<<]>>>");
+        // bfinterpreter.LoadProgram(@"C:\Users\User\Desktop\gitCSharp\Blok 1\Solution Blok1\user defined resources\bfcode_debug_file.txt");
+        // C:\Users\User\Desktop\gitCSharp\Blok 1\Solution Blok1\user defined resources\bfcode_debug_file.txt
+        // bfinterpreter.LoadProgram(">>>+<<<[-[->+>+<<]>>[-<<+>>]<+[->>[->+>+<<]>[->>+<<]>[-<<+>>]<<<<]>>[-]>>>[-<<<+>>>]<<<<<<]>>>");
 
         bfinterpreter.LoadProgram(input);
         bfinterpreter.PreparedInput = "";

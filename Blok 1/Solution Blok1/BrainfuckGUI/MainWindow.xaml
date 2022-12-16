@@ -9,14 +9,27 @@
     <Grid>
         <TextBox Name="CodeBox"  HorizontalAlignment="Left" Margin="25,30,0,0" TextWrapping="Wrap" Text="[hint: comments kunnen worden geschreven door loops te starten op cells met 0 als waarde&#x0d;&#x0a;hierdoor wordt de loop niet uitgevoerd, eveneens wordt text behalve &lt;&gt;+-[] en ., niet uitgevoerd&#x0d;&#x0a;volgende programma demonstreerd hello world]&#x0d;&#x0a;&gt;++++++++[&lt;+++++++++&gt;-]&lt;.&gt;++++[&lt;+++++++&gt;-]&lt;+.+++++++..+++.&gt;&gt;++++++[&lt;+++++++&gt;-]&lt;++.------------.&gt;++++++[&lt;+++++++++&gt;-]&lt;+.&lt;.+++.------.--------.&gt;&gt;&gt;++++[&lt;++++++++&gt;-]&lt;+."
                  AcceptsReturn="True" VerticalAlignment="Top" Width="550" Height="200" />
-        <Button Name="RunBtn" Content="run" HorizontalAlignment="Left" Margin="700,30,0,0" VerticalAlignment="Top" Width="80" Click="Run"/>
-        <Button Content="clear" HorizontalAlignment="Left" Margin="700,60,0,0" VerticalAlignment="Top" Width="80" Click="Clear"/>
-        <Button Content="save" HorizontalAlignment="Left" Margin="600,60,0,0" VerticalAlignment="Top" Width="80" Click="Save"/>
-        <Button Content="load" HorizontalAlignment="Left" Margin="600,30,0,0" VerticalAlignment="Top" Width="80" Click="Load"/>
-        <Button Content="step" HorizontalAlignment="Left" Margin="600,90,0,0" VerticalAlignment="Top" Width="80" Click="Step"/>
-        <Button Content="reset" HorizontalAlignment="Left" Margin="700,120,0,0" VerticalAlignment="Top" Width="80" Click="Reset"/>
+        <Button Name="RunBtn" Content="run" HorizontalAlignment="Left" Margin="700,30,0,0" VerticalAlignment="Top" Width="80" Click="Run" ToolTipService.ShowDuration="2000" 
+            ToolTipService.BetweenShowDelay="10000" 
+            ToolTip="voer het programma uit"/>
+        <Button Content="clear" HorizontalAlignment="Left" Margin="700,60,0,0" VerticalAlignment="Top" Width="80" Click="Clear" ToolTipService.ShowDuration="2000" 
+            ToolTipService.BetweenShowDelay="10000" 
+            ToolTip="Verwijder alle huidige code in het codevenster"/>
+        <Button Content="save" HorizontalAlignment="Left" Margin="600,60,0,0" VerticalAlignment="Top" Width="80" Click="Save" ToolTipService.ShowDuration="2000" 
+            ToolTipService.BetweenShowDelay="10000" 
+            ToolTip="sla huidige code op"/>
+        <Button Content="load" HorizontalAlignment="Left" Margin="600,30,0,0" VerticalAlignment="Top" Width="80" Click="Load" ToolTipService.ShowDuration="2000" 
+            ToolTipService.BetweenShowDelay="10000" 
+            ToolTip="laad een bestand in"/>
+        <Button Content="step" HorizontalAlignment="Left" Margin="600,90,0,0" VerticalAlignment="Top" Width="80" Click="Step" ToolTipService.ShowDuration="2000" 
+            ToolTipService.BetweenShowDelay="10000" 
+            ToolTip="voer een instructie uit"/>
+        <Button Content="reset" HorizontalAlignment="Left" Margin="700,120,0,0" VerticalAlignment="Top" Width="80" Click="Reset" ToolTipService.ShowDuration="2000" 
+            ToolTipService.BetweenShowDelay="10000" 
+            ToolTip="reset alle interne parameters"/>
         <Button Name="MemViewBtn" Content="print memory" HorizontalAlignment="Left" Margin="700,90,0,0" VerticalAlignment="Top" Width="80"
-                IsEnabled="False" Click="Memview"/>
+                IsEnabled="False" Click="Memview" ToolTipService.ShowDuration="2000" ToolTipService.BetweenShowDelay="10000" 
+                ToolTip="print huidige memory in het programma uit"/>
         
         <Label Name="ToHideLabel"  Content="Delay(ms): " HorizontalAlignment="Left" Margin="600,150,0,0" VerticalAlignment="Top" Width="80"/>
         <TextBox Name ="Delay" Text="1000" HorizontalAlignment="Left" Margin="700,155,0,0" VerticalAlignment="Top" Width="80"/>

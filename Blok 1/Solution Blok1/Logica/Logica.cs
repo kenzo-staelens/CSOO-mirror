@@ -140,7 +140,7 @@ namespace Logica {
                         this.loopPointer.Push(ProgramPointer);
                     }
                     else {
-                        //find index of matching ], dit codeblok hoort namelijk niet te worden uitgevoerd
+                        // find index of matching ], dit codeblok hoort namelijk niet te worden uitgevoerd
                         int bracketCount = 0;
                         int index = 0;
                         for (int j = ProgramPointer; j < this.Program.Length; j++) {

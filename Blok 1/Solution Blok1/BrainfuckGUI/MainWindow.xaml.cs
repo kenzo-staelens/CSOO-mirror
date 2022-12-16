@@ -52,7 +52,6 @@ namespace BrainfuckGUI {
             };
             interpreter = new BfInterpreter(Input, Output);
             interpreter.Tick = Tick;
-            MemViewBtn.IsEnabled = true;
         }
 
         private async void Run(object sender, RoutedEventArgs e) {
@@ -123,7 +122,7 @@ namespace BrainfuckGUI {
             int start = (int)Math.Floor((decimal)interpreter.MemoryView.Count/10)*10;
             string[] temp = new string[interpreter.MemoryView.Count-start+1];
             for (int i = 1; i<temp.Length; i++) {
-                try {//niet mooi rond einde op array size (default int16.MaxValue = 32767)
+                try {// niet mooi rond einde op array size (default int16.MaxValue = 32767)
                     temp[i] = interpreter.MemoryView[start+i].ToString();
                 }
                 catch {
@@ -152,11 +151,11 @@ namespace BrainfuckGUI {
     /// </summary>
     /// <see cref="https://stackoverflow.com/questions/8103743/wpf-c-sharp-inputbox"/>
     public class InputBox {
-        Window Box = new Window();//window for the inputbox
+        Window Box = new Window();// window for the inputbox
         StackPanel sp1 = new StackPanel();// items container
-        string title = "InputBox";//title as heading
-        string defaulttext = "Input...";//default textbox content
-        string okbuttontext = "OK";//Ok button content
+        string title = "InputBox";// title as heading
+        string defaulttext = "Input...";// default textbox content
+        string okbuttontext = "OK";// Ok button content
         bool clicked = false;
         TextBox input = new TextBox();
         Button ok = new Button();
