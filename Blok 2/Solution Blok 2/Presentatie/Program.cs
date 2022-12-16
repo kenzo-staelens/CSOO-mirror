@@ -5,6 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Logica;
 using Globals;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 internal class Program {
     private static void Main(string[] args) {
@@ -17,6 +21,7 @@ internal class Program {
         matrix.MatrixData[2, 1] = 6;
         MatrixOperator Operator = new MatrixOperator();
         var r = Operator.transpose(matrix);
-        Console.WriteLine(r.Serialize());
+        string test = JsonSerializer.Serialize(r);
+        Console.WriteLine(test);
     }
 }

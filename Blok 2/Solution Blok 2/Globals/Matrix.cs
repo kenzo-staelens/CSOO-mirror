@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Globals {
-    public struct Matrix : ISerializable {
+    public struct Matrix {
+        
         public double[,] MatrixData { get; set; }
 
         public double this[int i, int j] {
@@ -84,10 +85,6 @@ namespace Globals {
             return Enumerable.Range(0, this.Dimensions[1])
                     .Select(x => temp[rowNumber, x])
                     .ToArray();
-        }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context) {
-            throw new NotImplementedException();
         }
     }
 }
