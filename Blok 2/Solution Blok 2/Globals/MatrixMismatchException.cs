@@ -12,7 +12,6 @@ namespace Globals {
     [Serializable]
     public class MatrixMismatchException : Exception {
 
-        public int[] Dimension { get; }
         public MatrixMismatchException() { }
 
         public MatrixMismatchException(string message)
@@ -20,10 +19,5 @@ namespace Globals {
 
         public MatrixMismatchException(string message, Exception inner)
             : base(message, inner) { }
-
-        public MatrixMismatchException(string message, int[] dim)
-        : this(message) {
-            Dimension = dim;
-        }
     }
 }
