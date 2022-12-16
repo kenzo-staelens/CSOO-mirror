@@ -11,7 +11,7 @@
                  AcceptsReturn="True" VerticalAlignment="Top" Width="550" Height="200" />
         <Button Name="RunBtn" Content="run" HorizontalAlignment="Left" Margin="700,30,0,0" VerticalAlignment="Top" Width="80" Click="Run" ToolTipService.ShowDuration="2000" 
             ToolTipService.BetweenShowDelay="10000" 
-            ToolTip="voer het programma uit"/>
+            ToolTip="voer het programma uit" Click="Run"/>
         <Button Content="clear" HorizontalAlignment="Left" Margin="700,60,0,0" VerticalAlignment="Top" Width="80" Click="Clear" ToolTipService.ShowDuration="2000" 
             ToolTipService.BetweenShowDelay="10000" 
             ToolTip="Verwijder alle huidige code in het codevenster"/>
