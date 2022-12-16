@@ -7,7 +7,7 @@ namespace Logica {
     public class MatrixOperator {
         public MatrixOperator() { }
 
-        public void add(Matrix mat1, Matrix mat2) {
+        public void Add(Matrix mat1, Matrix mat2) {
 
             if (mat1.Rows != mat2.Rows || mat1.Columns != mat2.Columns) throw new MatrixMismatchException();
 
@@ -20,7 +20,7 @@ namespace Logica {
             
         }
 
-        public Matrix dot(Matrix mat1, Matrix mat2) {// async this
+        public Matrix Dot(Matrix mat1, Matrix mat2) {// async this
             if (mat1.Columns != mat2.Rows) throw new MatrixMismatchException($"cannot dot matrixes with {mat1.Rows} columns and {mat2.Columns} rows");
             Matrix result = new Matrix(mat1.Rows, mat2.Columns);
 
@@ -36,7 +36,7 @@ namespace Logica {
             return result;
         }
 
-        public Matrix transpose(Matrix mat) {
+        public Matrix Transpose(Matrix mat) {
             Matrix result = new Matrix(mat.Columns, mat.Rows);
             for(int row = 0; row < result.Rows; row++) {
                 var temp = mat.GetColumn(row);

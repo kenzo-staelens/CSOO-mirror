@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Datalaag;
 using Globals;
+using ExtentionMethods;
 
 namespace Logica {
     public class NeuralNetwork : MachineLearningModel {
@@ -14,6 +15,7 @@ namespace Logica {
         private IMatrixProvider _matrixProvider;
         private List<Matrix> _matrixList = new List<Matrix>();
         private List<Matrix> _biasList = new List<Matrix>();
+        private MatrixOperator _matrixOperator = new MatrixOperator();
 
         public int Inputs { get; }
         public int Outputs { get; private set; }
@@ -49,7 +51,19 @@ namespace Logica {
         }
 
         public override string predict(double[] inputObject) {
+            
             if (_matrixList.Count == 0) throw new MLProcessingException();
+            var inputMatrix = new Matrix(inputObject);
+            var processMatrix = _matrixOperator.Transpose(inputMatrix);
+            for (int i=0;i< _matrixList.Count;i++) {
+                processMatrix = _matrixOperator.Dot(_matrixList[i], processMatrix);
+                /*processMatrix.Map(x => {
+                    foreach(double d in x) {
+                        d = d.Map(mappingfunc at i)
+                    }    
+                });*/
+                //map yada yada
+            }
             throw new NotImplementedException();
         }
 

@@ -16,7 +16,7 @@ internal class Program {
         matrix.MatrixData[2, 0] = 5;
         matrix.MatrixData[2, 1] = 6;
         MatrixOperator Operator = new MatrixOperator();
-        var r = Operator.transpose(matrix);
+        var r = Operator.Transpose(matrix);
         Console.WriteLine(r.Serialize());
     }
 }

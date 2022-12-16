@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -6,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Globals {
-    public struct Matrix {
+    public struct Matrix : IEnumerable {
 
         public double[,] MatrixData { get; set; }
         public int Rows {
@@ -26,6 +27,8 @@ namespace Globals {
             set { MatrixData[i, j] = value; }
         }
 
+
+
         public Matrix(Matrix mat) {
             this.MatrixData = new double[mat.Rows, mat.Columns];
             for (int i = 0; i < this.Rows; i++) { // array is reference type
@@ -37,6 +40,13 @@ namespace Globals {
 
         public Matrix(int rows, int cols) {
             this.MatrixData = new double[rows, cols];
+        }
+
+        public Matrix(double[] singleDim) {
+            this.MatrixData = new double[1, singleDim.Length];
+            for (int i = 0; i < singleDim.Length; i++) {
+                this.MatrixData[0, i]= singleDim[i];
+            }
         }
 
         public Matrix(double[,] matrix) {
@@ -90,6 +100,10 @@ namespace Globals {
             return Enumerable.Range(0, this.Columns)
                     .Select(x => temp[rowNumber, x])
                     .ToArray();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return MatrixData.GetEnumerator();
         }
     }
 }
