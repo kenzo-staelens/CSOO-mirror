@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Globals\Globals.csproj" />
+  </ItemGroup>
+
 </Project>

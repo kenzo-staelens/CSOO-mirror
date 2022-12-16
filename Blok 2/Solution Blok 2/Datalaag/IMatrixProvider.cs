@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Globals;
+
+namespace Datalaag {
+    public interface IMatrixProvider {
+        public Matrix Zero(int row, int col);
+        public Matrix Identity(int row, int col);
+
+        public Matrix Random(int row, int col);
+
+        public Matrix FromString(string str);
+    }
+}

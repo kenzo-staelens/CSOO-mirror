@@ -5,6 +5,8 @@ using System.Xml.Serialization;
 
 namespace Logica {
     public class MatrixOperator {
+        public MatrixOperator() { }
+
         public void add(Matrix mat1, Matrix mat2) {
             if (!Enumerable.SequenceEqual(mat1.Dimensions, mat2.Dimensions)) throw new MatrixMismatchException();
 
@@ -28,6 +30,17 @@ namespace Logica {
                         sum += mat1.MatrixData[row, depth] * mat2.MatrixData[depth, col];
                     }
                     result.MatrixData[row, col] = sum;
+                }
+            }
+            return result;
+        }
+
+        public Matrix transpose(Matrix mat) {
+            Matrix result = new Matrix(mat.Dimensions[1], mat.Dimensions[0]);
+            for(int row = 0; row < result.Dimensions[0]; row++) {
+                var temp = mat.GetColumn(row);
+                for(int i = 0; i < temp.Length; i++) {
+                    result.MatrixData[row, i] = temp[i];
                 }
             }
             return result;

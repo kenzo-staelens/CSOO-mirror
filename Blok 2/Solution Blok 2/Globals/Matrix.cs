@@ -13,10 +13,6 @@ namespace Globals {
                 return new int[2] { MatrixData.GetLength(0), MatrixData.GetLength(1) };
             }
         }
-        public Matrix() {
-            this.MatrixData = new double[1, 1];
-            this.MatrixData[0, 0] = 0;
-        }
 
         public Matrix(Matrix mat) {
             this.MatrixData = new double[mat.Dimensions[0], mat.Dimensions[1]];
