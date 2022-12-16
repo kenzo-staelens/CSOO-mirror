@@ -61,7 +61,7 @@ namespace Logica {
                 Path.GetFullPath(programinput);
                 loadedProgram = this.fileLoader.Load(programinput);
             }
-            catch (Exception) {
+            catch (Exception e) {
                 loadedProgram = programinput;
             }
             this.Program = new Programdata(loadedProgram);

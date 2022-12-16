@@ -139,6 +139,7 @@ namespace BrainfuckGUI {
         private void Reset(object sender, RoutedEventArgs e) {
             interpreter.LoadProgram(CodeBox.Text);
             RunningCode.Text = interpreter.Program.Serialize();
+            Console.WriteLine($"running: {interpreter.Program.Serialize()}");
             OutputBox.Text = "";
             MemViewBtn.IsEnabled = false;
             interpreter.Reset();
