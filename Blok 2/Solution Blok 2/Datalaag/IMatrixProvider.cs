@@ -8,7 +8,7 @@ using Globals;
 namespace Datalaag {
     public interface IMatrixProvider {
         public Matrix Zero(int row, int col);
-        public Matrix Identity(int row, int col);
+        public Matrix Identity(int size);
 
         public Matrix Random(int row, int col);
 

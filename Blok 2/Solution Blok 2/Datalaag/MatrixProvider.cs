@@ -11,10 +11,11 @@ namespace Datalaag {
             throw new NotImplementedException();
         }
 
-        public Matrix Identity(int row, int col) {
-            if (row <= 0 || col <= 0) throw new ArgumentException($"arguments row({row}) and column({col}) cannot be less than or equal to 0");
-            if (row!=col) throw new ArgumentException($"row({row}) and column({col}) must be equal for identity matrixes");
-            throw new NotImplementedException();
+        public Matrix Identity(int size) {
+            if (size <= 0) throw new ArgumentException($"argument size({size}) cannot be less than or equal to 0");
+            var result = Zero(size, size);
+            for(int i = 0; i < size; i++) { result[i, i] = 1; }
+            return result;
         }
 
         public Matrix Random(int row, int col) {
