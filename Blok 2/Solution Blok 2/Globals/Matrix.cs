@@ -6,8 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Globals {
-    public class Matrix : ISerializable {
+    public struct Matrix : ISerializable {
         public double[,] MatrixData { get; set; }
+
+        public double this[int i, int j] {
+            get { return MatrixData[i,j]; }
+            set { MatrixData[i,j] = value; }
+        }
+
         public int[] Dimensions {
             get {
                 return new int[2] { MatrixData.GetLength(0), MatrixData.GetLength(1) };
@@ -60,8 +66,9 @@ namespace Globals {
         /// <returns></returns>
         /// <see cref="https://stackoverflow.com/questions/27427527/how-to-get-a-complete-row-or-column-from-2d-array-in-c-sharp"/>
         public double[] GetColumn(int columnNumber) {
+            var temp = MatrixData; // cannot access MatrixData in struct from anonymous lamdba
             return Enumerable.Range(0, this.Dimensions[0])
-                    .Select(x => this.MatrixData[x, columnNumber])
+                    .Select(x => temp[x, columnNumber])
                     .ToArray();
         }
 
@@ -73,8 +80,9 @@ namespace Globals {
         /// <returns></returns>
         /// <see cref="https://stackoverflow.com/questions/27427527/how-to-get-a-complete-row-or-column-from-2d-array-in-c-sharp"/>
         public double[] GetRow(int rowNumber) {
+            var temp = MatrixData; // cannot access MatrixData in struct from anonymous lamdba
             return Enumerable.Range(0, this.Dimensions[1])
-                    .Select(x => this.MatrixData[rowNumber, x])
+                    .Select(x => temp[rowNumber, x])
                     .ToArray();
         }
 
