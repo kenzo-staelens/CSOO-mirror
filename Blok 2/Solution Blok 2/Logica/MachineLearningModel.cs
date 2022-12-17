@@ -17,8 +17,8 @@ namespace Logica {
                 _trainingRate = value;
             }
         }
-        public abstract Matrix predict(double[] inputObject);
+        public abstract Matrix Predict(double[] inputObject);
 
-        public abstract void train(double[] trainingInput, double[] trainingOutput);
+        public abstract void Train(List<double[]> trainingInput, List<double[]> trainingOutput);
     }
 }

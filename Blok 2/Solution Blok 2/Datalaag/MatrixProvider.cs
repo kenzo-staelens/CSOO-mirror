@@ -39,5 +39,13 @@ namespace Datalaag {
             if (row <= 0 || col <= 0) throw new ArgumentException($"arguments row({row}) and column({col}) cannot be less than or equal to 0");
             return new Matrix(row, col);
         }
+
+        public Matrix FromArray(double[] array) {
+            return new Matrix(array);
+        }
+
+        public Matrix FromArray(double[,] array) {
+            return new Matrix(array);
+        }
     }
 }

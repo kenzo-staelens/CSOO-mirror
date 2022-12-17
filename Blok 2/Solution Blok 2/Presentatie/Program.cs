@@ -18,7 +18,7 @@ internal class Program {
         NeuralNetwork nn = new NeuralNetwork(2, mo, mp);
         nn.AddLayer(4);
         nn.AddLayer(3);
-        var pred = nn.predict(new double[] { 1, 0 });
+        var pred = nn.Predict(new double[] { 1, 0 });
         Console.WriteLine(pred.Serialize());
     }
 }

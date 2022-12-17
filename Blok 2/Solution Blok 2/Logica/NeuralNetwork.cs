@@ -17,6 +17,7 @@ namespace Logica {
 
         private List<Matrix> _matrixList;
         private List<Matrix> _biasList;
+        private List<Matrix> _memoryList;
         private List<Func<double, double>> _mappingFunctions;
 
         private IMatrixOperator _matrixOperator;
@@ -35,6 +36,7 @@ namespace Logica {
             this._matrixProvider = matrixProvider;
             this._matrixList = new List<Matrix>();
             this._biasList = new List<Matrix>();
+            this._memoryList = new List<Matrix>();
             this._mappingFunctions = new List<Func<double, double>>();
             this._matrixOperator = matrixOperator;
             this._defaultMappingFunc = x => { return 1 / (1 + Math.Exp(-x)); };
@@ -70,21 +72,32 @@ namespace Logica {
             _mappingFunctions.Add(mappingFunc);
         }
 
-        public override Matrix predict(double[] inputObject) {
+        private Matrix predict(double[] inputObject, bool keepMemory) {
             if (_matrixList.Count == 0) throw new MLProcessingException();
-            var inputMatrix = new Matrix(inputObject);
+            var inputMatrix = _matrixProvider.FromArray(inputObject);
             var processMatrix = _matrixOperator.Transpose(inputMatrix);
-            for (int i=0;i< _matrixList.Count;i++) {
+            for (int i = 0; i < _matrixList.Count; i++) {
                 processMatrix = _matrixOperator.Dot(_matrixList[i], processMatrix);
                 processMatrix = _matrixOperator.Add(processMatrix, _biasList[i]);
                 processMatrix.Map((double x) => {// casting because of ambiguous Func<Matrix, Matrix> and Func<double,double>
                     return x.Map(_mappingFunctions[i]);
                 });
+                if (keepMemory) _memoryList.Add(processMatrix);
             }
             return processMatrix;
         }
 
-        public override void train(double[] trainingInput, double[] trainingOutput) {
+        public override Matrix Predict(double[] inputObject) {
+            return predict(inputObject, false);
+        }
+
+        public override void Train(List<double[]> trainingInput, List<double[]> trainingOutput) {
+            // for random (index) in trainingInput
+            int random = 0;
+            Matrix currentInput = _matrixProvider.FromArray(trainingInput[random]);
+            Matrix currentOutput = _matrixProvider.FromArray(trainingInput[random]);
+            var pred = predict(trainingInput[random],true)
+            var error = _matrixOperator.Add(trainingOutput[random], pred.Map((double x) => { return -x; }));
             throw new NotImplementedException();
         }
 

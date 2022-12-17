@@ -15,5 +15,8 @@ namespace Datalaag {
         public Matrix Random(int row, int col, double min, double max);
 
         public Matrix FromString(string str);
+
+        public Matrix FromArray(double[] arr);
+        public Matrix FromArray(double[,] arr);
     }
 }
