@@ -4,23 +4,23 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 namespace Logica {
-    public class MatrixOperator {
-        public MatrixOperator() { }
+    public class MatrixOperator : IMatrixOperator {
+        public MatrixOperator() { } //async all this
 
-        public void Add(Matrix mat1, Matrix mat2) {
+        public Matrix Add(Matrix mat1, Matrix mat2) {
 
             if (mat1.Rows != mat2.Rows || mat1.Columns != mat2.Columns) throw new MatrixMismatchException();
-
-            for (int i = 0; i < mat1.Rows; i++) {
-                for (int j = 0; j < mat1.Columns; j++) {
-                    double v = mat1.MatrixData[i, j] + mat2.MatrixData[i, j];
-                    mat1.MatrixData[i, j] = v;
+            var result = new Matrix(mat1.Rows, mat1.Columns);
+            for (int i = 0; i < result.Rows; i++) {
+                for (int j = 0; j < result.Columns; j++) {
+                    result[i, j] = mat1.MatrixData[i, j] + mat2.MatrixData[i, j];
                 }
             }
+            return result;
             
         }
 
-        public Matrix Dot(Matrix mat1, Matrix mat2) {// async this
+        public Matrix Dot(Matrix mat1, Matrix mat2) {
             if (mat1.Columns != mat2.Rows) throw new MatrixMismatchException($"cannot dot matrixes with {mat1.Rows} columns and {mat2.Columns} rows");
             Matrix result = new Matrix(mat1.Rows, mat2.Columns);
 
@@ -39,9 +39,9 @@ namespace Logica {
         public Matrix Transpose(Matrix mat) {
             Matrix result = new Matrix(mat.Columns, mat.Rows);
             for(int row = 0; row < result.Rows; row++) {
-                var temp = mat.GetColumn(row);
+                var temp = mat.GetColumn(row);// useful for later threading
                 for(int i = 0; i < temp.Length; i++) {
-                    result.MatrixData[row, i] = temp[i];
+                    result.MatrixData[row, i] = temp[i]; // result[row, i] = mat[i, row]
                 }
             }
             return result;

@@ -14,23 +14,29 @@ namespace Logica {
     public class NeuralNetwork : MachineLearningModel {
 
         private IMatrixProvider _matrixProvider;
-        private List<Matrix> _matrixList = new List<Matrix>();
-        private List<Matrix> _biasList = new List<Matrix>();
-        private List<Func<double, double>> _mappingFunctions = new List<Func<double, double>>();
-        private MatrixOperator _matrixOperator = new MatrixOperator();
+
+        private List<Matrix> _matrixList;
+        private List<Matrix> _biasList;
+        private List<Func<double, double>> _mappingFunctions;
+
+        private IMatrixOperator _matrixOperator;
         private Func<double, double> _defaultMappingFunc;
 
         public int Inputs { get; }
         public int Outputs { get; private set; }
         
 
-        public NeuralNetwork(int inputs, IMatrixProvider matrixProvider) : this(inputs, 0.5, matrixProvider) { }
+        public NeuralNetwork(int inputs, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) : this(inputs, 0.5, matrixOperator, matrixProvider) { }
 
-        public NeuralNetwork(int inputs, double trainingRate, IMatrixProvider matrixProvider) {
+        public NeuralNetwork(int inputs, double trainingRate, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) {
             if (inputs <= 0) throw new ArgumentException("expecting at least 1 input");
             Inputs = inputs;
             this.TrainingRate = trainingRate;
             this._matrixProvider = matrixProvider;
+            this._matrixList = new List<Matrix>();
+            this._biasList = new List<Matrix>();
+            this._mappingFunctions = new List<Func<double, double>>();
+            this._matrixOperator = matrixOperator;
             this._defaultMappingFunc = x => { return 1 / (1 + Math.Exp(-x)); };
         }
 
@@ -70,6 +76,7 @@ namespace Logica {
             var processMatrix = _matrixOperator.Transpose(inputMatrix);
             for (int i=0;i< _matrixList.Count;i++) {
                 processMatrix = _matrixOperator.Dot(_matrixList[i], processMatrix);
+                processMatrix = _matrixOperator.Add(processMatrix, _biasList[i]);
                 processMatrix.Map((double x) => {// casting because of ambiguous Func<Matrix, Matrix> and Func<double,double>
                     return x.Map(_mappingFunctions[i]);
                 });
