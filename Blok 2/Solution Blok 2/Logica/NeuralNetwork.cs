@@ -13,15 +13,15 @@ using System.Linq.Expressions;
 namespace Logica {
     public class NeuralNetwork : MachineLearningModel {
 
-        private IMatrixProvider _matrixProvider;
+        private readonly IMatrixProvider _matrixProvider;
+        
+        private readonly List<Matrix> _matrixList;
+        private readonly List<Matrix> _biasList;
+        private readonly List<Matrix> _memoryList;
+        private readonly List<Func<double, double>> _mappingFunctions;
 
-        private List<Matrix> _matrixList;
-        private List<Matrix> _biasList;
-        private List<Matrix> _memoryList;
-        private List<Func<double, double>> _mappingFunctions;
-
-        private IMatrixOperator _matrixOperator;
-        private Func<double, double> _defaultMappingFunc;
+        private readonly IMatrixOperator _matrixOperator;
+        private readonly Func<double, double> _defaultMappingFunc;
 
         public int Inputs { get; }
         public int Outputs { get; private set; }
@@ -74,7 +74,7 @@ namespace Logica {
             _mappingFunctions.Add(mappingFunc);
         }
 
-        private Matrix predict(double[] inputObject, bool keepMemory) {
+        private Matrix Predict(double[] inputObject, bool keepMemory) {
             if (_matrixList.Count == 0) throw new MLProcessingException();
             var inputMatrix = _matrixProvider.FromArray(inputObject);
             var processMatrix = _matrixOperator.Transpose(inputMatrix);
@@ -90,7 +90,7 @@ namespace Logica {
         }
 
         public override Matrix Predict(double[] inputObject) {
-            return predict(inputObject, false);
+            return Predict(inputObject, false);
         }
 
         public override void Train(List<double[]> trainingInput, List<double[]> trainingOutput) {
@@ -98,7 +98,7 @@ namespace Logica {
             int random = new Random().Next(trainingInput.Count);
             Matrix currentOutput = _matrixProvider.FromArray(trainingInput[random]);
             currentOutput = _matrixOperator.Transpose(currentOutput);
-            Matrix prediction = predict(trainingInput[random], true);
+            Matrix prediction = Predict(trainingInput[random], true);
             Matrix error = _matrixOperator.Add(currentOutput, prediction.Map((double x) => { return -x; }));
 
             // backpropagate -> create an error list back to front then list.Reverse();
