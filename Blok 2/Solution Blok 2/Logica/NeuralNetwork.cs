@@ -122,7 +122,6 @@ namespace Logica {
                 gradient = _matrixOperator.Multiply(gradient, errorList[i]);
                 
                 gradient = gradient.Map((double x) => { return x * TrainingRate; });
-                // ik heb geen enkel idee waarom dingen werken met -TrainingRate dat +TrainingRate zou moeten zijn
 
                 _biasList[i] = _matrixOperator.Add(_biasList[i], gradient);
 
