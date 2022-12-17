@@ -34,10 +34,12 @@ namespace Logica {
             Inputs = inputs;
             this.TrainingRate = trainingRate;
             this._matrixProvider = matrixProvider;
+
             this._matrixList = new List<Matrix>();
             this._biasList = new List<Matrix>();
             this._memoryList = new List<Matrix>();
             this._mappingFunctions = new List<Func<double, double>>();
+
             this._matrixOperator = matrixOperator;
             this._defaultMappingFunc = x => { return 1 / (1 + Math.Exp(-x)); };
         }
@@ -51,8 +53,8 @@ namespace Logica {
         }
 
         public void AddLayer(double[,] layer, double[,] bias, Func<double,double> mappingFunc) {
-            var layerMatrix = new Matrix(layer);
-            var biasMatrix = new Matrix(bias);
+            var layerMatrix = _matrixProvider.FromArray(layer);
+            var biasMatrix = _matrixProvider.FromArray(bias);
             if (layerMatrix.Rows != biasMatrix.Rows) throw new MatrixMismatchException($"mismatch in layer and bias row count {layerMatrix.Rows} and {biasMatrix.Rows}");
             if (layerMatrix.Columns != Outputs) throw new MatrixMismatchException($"mismatch in last layer's count and new layers's input count {layerMatrix.Columns} and {_matrixList.Last().Rows}");
             if (biasMatrix.Columns != 1) throw new MatrixMismatchException("bias must have exactly one column");
@@ -68,7 +70,7 @@ namespace Logica {
             else {
                 _matrixList.Add(_matrixProvider.Random(nodes, _matrixList.Last().Rows));
             }
-            _biasList.Add(new Matrix(nodes, 1));
+            _biasList.Add(_matrixProvider.Random(nodes, 1));
             _mappingFunctions.Add(mappingFunc);
         }
 
@@ -92,12 +94,16 @@ namespace Logica {
         }
 
         public override void Train(List<double[]> trainingInput, List<double[]> trainingOutput) {
-            // for random (index) in trainingInput
-            int random = 0;
-            Matrix currentInput = _matrixProvider.FromArray(trainingInput[random]);
+            if (trainingInput.Count != trainingOutput.Count) throw new MLProcessingException($"length of input({trainingInput.Count}) and target({trainingOutput.Count}) arrays must be equal");
+            int random = new Random().Next(trainingInput.Count);
             Matrix currentOutput = _matrixProvider.FromArray(trainingInput[random]);
-            var pred = predict(trainingInput[random],true)
-            var error = _matrixOperator.Add(trainingOutput[random], pred.Map((double x) => { return -x; }));
+            currentOutput = _matrixOperator.Transpose(currentOutput);
+            Matrix prediction = predict(trainingInput[random], true);
+            Matrix error = _matrixOperator.Add(currentOutput, prediction.Map((double x) => { return -x; }));
+
+            // backpropagate -> create an error list back to front then list.Reverse();
+            // then update weights (gradient descent)
+            
             throw new NotImplementedException();
         }
 
