@@ -2,14 +2,23 @@
 
 namespace ExtensionMethods {
     public static class Extensions {
-        public static int Map(this int value, Func<int, int> mappingMethod) {
+
+
+        public static double Map(this double value, Func<double, double> mappingMethod) {
             return mappingMethod(value);
         }
 
-        public static void Map(this Matrix value, Action<Matrix> mappingMethod) {
-            mappingMethod(value);
+        public static Matrix Map(this Matrix value, Func<double, double> mappingMethod) {//same matrix size
+            for (int i = 0; i < value.Rows; i++) {
+                for (int j = 0; j < value.Columns; j++) {
+                    value[i, j] = value[i, j].Map(mappingMethod);
+                }
+            }
+            return value;
         }
 
-
+        public static Matrix Map(this Matrix value, Func<Matrix, Matrix> mappingMethod) {//resizes matrix
+            return mappingMethod(value);
+        }
     }
 }

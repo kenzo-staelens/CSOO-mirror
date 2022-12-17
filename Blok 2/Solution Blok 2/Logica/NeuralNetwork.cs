@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Datalaag;
 using Globals;
 using ExtensionMethods;
+using System.Linq.Expressions;
 
 namespace Logica {
     public class NeuralNetwork : MachineLearningModel {
@@ -15,7 +16,9 @@ namespace Logica {
         private IMatrixProvider _matrixProvider;
         private List<Matrix> _matrixList = new List<Matrix>();
         private List<Matrix> _biasList = new List<Matrix>();
+        private List<Func<double, double>> _mappingFunctions = new List<Func<double, double>>();
         private MatrixOperator _matrixOperator = new MatrixOperator();
+        private Func<double, double> _defaultMappingFunc;
 
         public int Inputs { get; }
         public int Outputs { get; private set; }
@@ -28,19 +31,29 @@ namespace Logica {
             Inputs = inputs;
             this.TrainingRate = trainingRate;
             this._matrixProvider = matrixProvider;
+            this._defaultMappingFunc = x => { return 1 / (1 + Math.Exp(-x)); };
         }
 
         public void AddLayer(double[,] layer, double[,] bias) {
+            AddLayer(layer, bias, _defaultMappingFunc);
+        }
+        
+        public void AddLayer(int nodes) {
+            AddLayer(nodes, _defaultMappingFunc);
+        }
+
+        public void AddLayer(double[,] layer, double[,] bias, Func<double,double> mappingFunc) {
             var layerMatrix = new Matrix(layer);
             var biasMatrix = new Matrix(bias);
             if (layerMatrix.Rows != biasMatrix.Rows) throw new MatrixMismatchException($"mismatch in layer and bias row count {layerMatrix.Rows} and {biasMatrix.Rows}");
             if (layerMatrix.Columns != Outputs) throw new MatrixMismatchException($"mismatch in last layer's count and new layers's input count {layerMatrix.Columns} and {_matrixList.Last().Rows}");
             if (biasMatrix.Columns != 1) throw new MatrixMismatchException("bias must have exactly one column");
-            this._matrixList.Add(layerMatrix);
-            this._biasList.Add(biasMatrix);
+            _matrixList.Add(layerMatrix);
+            _biasList.Add(biasMatrix);
+            _mappingFunctions.Add(mappingFunc);
         }
 
-        public void AddLayer(int nodes) {
+        public void AddLayer(int nodes, Func<double,double> mappingFunc) {
             if (_matrixList.Count == 0) {
                 _matrixList.Add(_matrixProvider.Random(nodes, Inputs));
             }
@@ -48,23 +61,20 @@ namespace Logica {
                 _matrixList.Add(_matrixProvider.Random(nodes, _matrixList.Last().Rows));
             }
             _biasList.Add(new Matrix(nodes, 1));
+            _mappingFunctions.Add(mappingFunc);
         }
 
-        public override string predict(double[] inputObject) {
-            
+        public override Matrix predict(double[] inputObject) {
             if (_matrixList.Count == 0) throw new MLProcessingException();
             var inputMatrix = new Matrix(inputObject);
             var processMatrix = _matrixOperator.Transpose(inputMatrix);
             for (int i=0;i< _matrixList.Count;i++) {
                 processMatrix = _matrixOperator.Dot(_matrixList[i], processMatrix);
-                /*processMatrix.Map(x => {
-                    foreach(double d in x) {
-                        d = d.Map(mappingfunc at i)
-                    }    
-                });*/
-                //map yada yada
+                processMatrix.Map((double x) => {// casting because of ambiguous Func<Matrix, Matrix> and Func<double,double>
+                    return x.Map(_mappingFunctions[i]);
+                });
             }
-            throw new NotImplementedException();
+            return processMatrix;
         }
 
         public override void train(double[] trainingInput, double[] trainingOutput) {

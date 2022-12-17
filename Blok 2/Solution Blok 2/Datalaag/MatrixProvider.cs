@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Datalaag {
-    internal class MatrixProvider : IMatrixProvider {
+    public class MatrixProvider : IMatrixProvider {
         public Matrix FromString(string str) {
             throw new NotImplementedException();
         }

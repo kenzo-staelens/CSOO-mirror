@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Globals;
+
 namespace Logica {
     public abstract class MachineLearningModel {
         private double _trainingRate;
@@ -15,7 +17,7 @@ namespace Logica {
                 _trainingRate = value;
             }
         }
-        public abstract string predict(double[] inputObject); // serialized prediction
+        public abstract Matrix predict(double[] inputObject);
 
         public abstract void train(double[] trainingInput, double[] trainingOutput);
     }
