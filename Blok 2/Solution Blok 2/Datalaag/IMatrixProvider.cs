@@ -18,5 +18,7 @@ namespace Datalaag {
 
         public Matrix FromArray(double[] arr);
         public Matrix FromArray(double[,] arr);
+
+        public Matrix Copy(Matrix matrix);
     }
 }

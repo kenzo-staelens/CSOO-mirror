@@ -47,5 +47,9 @@ namespace Datalaag {
         public Matrix FromArray(double[,] array) {
             return new Matrix(array);
         }
+
+        public Matrix Copy(Matrix matrix) {
+            return new Matrix(matrix);
+        }
     }
 }

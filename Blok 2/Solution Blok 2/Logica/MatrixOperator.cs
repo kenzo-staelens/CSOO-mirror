@@ -36,6 +36,16 @@ namespace Logica {
             return result;
         }
 
+        public Matrix Multiply(Matrix mat1, Matrix mat2) {
+            Matrix result = new Matrix(mat1.Rows, mat1.Columns);
+            for(int row = 0; row < result.Rows; row++) {
+                for(int col = 0;col<result.Columns; col++) {
+                    result[row, col] = mat1[row, col] * mat2[row, col];
+                }
+            }
+            return result;
+        }
+
         public Matrix Transpose(Matrix mat) {
             Matrix result = new Matrix(mat.Columns, mat.Rows);
             for(int row = 0; row < result.Rows; row++) {
