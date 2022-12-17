@@ -13,7 +13,7 @@ namespace Logica {
             var result = new Matrix(mat1.Rows, mat1.Columns);
             for (int i = 0; i < result.Rows; i++) {
                 for (int j = 0; j < result.Columns; j++) {
-                    result[i, j] = mat1.MatrixData[i, j] + mat2.MatrixData[i, j];
+                    result[i, j] = mat1[i, j] + mat2[i, j];
                 }
             }
             return result;
@@ -28,9 +28,9 @@ namespace Logica {
                 for(int col = 0; col < result.Columns; col++) {
                     double sum = 0;
                     for(int depth = 0; depth < mat1.Columns; depth++) {
-                        sum += mat1.MatrixData[row, depth] * mat2.MatrixData[depth, col];
+                        sum += mat1[row, depth] * mat2[depth, col];
                     }
-                    result.MatrixData[row, col] = sum;
+                    result[row, col] = sum;
                 }
             }
             return result;
@@ -41,7 +41,7 @@ namespace Logica {
             for(int row = 0; row < result.Rows; row++) {
                 var temp = mat.GetColumn(row);// useful for later threading
                 for(int i = 0; i < temp.Length; i++) {
-                    result.MatrixData[row, i] = temp[i]; // result[row, i] = mat[i, row]
+                    result[row, i] = temp[i]; // result[row, i] = mat[i, row]
                 }
             }
             return result;
