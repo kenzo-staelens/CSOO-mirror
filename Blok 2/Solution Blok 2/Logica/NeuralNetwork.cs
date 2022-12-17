@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Datalaag;
 using Globals;
-using ExtentionMethods;
+using ExtensionMethods;
 
 namespace Logica {
     public class NeuralNetwork : MachineLearningModel {
