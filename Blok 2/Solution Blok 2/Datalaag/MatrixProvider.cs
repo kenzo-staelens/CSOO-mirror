@@ -29,7 +29,7 @@ namespace Datalaag {
             for(int r = 0; r < row; r++) {
                 for(int c = 0; c < col; c++) {
                     var boundedRandom = new Random().NextDouble();
-                    result[r, c] = Helper.Map(boundedRandom, 0, 1, min, max);
+                    result[r, c] = Helper.Scale(boundedRandom, 0, 1, min, max);
                 }
             }
             return result;

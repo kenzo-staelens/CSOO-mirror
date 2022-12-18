@@ -14,7 +14,7 @@ namespace Logica {
     public class NeuralNetwork : MachineLearningModel {
 
         private IMatrixProvider _matrixProvider;
-        
+
         private List<Matrix> _matrixList;
         private List<Matrix> _biasList;
         private List<Matrix> _memoryList;
@@ -24,8 +24,12 @@ namespace Logica {
         private ActivationFunction _defaultActivation;
 
         public int Inputs { get; }
-        public int Outputs { get; private set; }
-        
+        public int Outputs {
+            get {
+                return _matrixList[_matrixList.Count-1].Rows;
+            }
+        }
+
 
         public NeuralNetwork(int inputs, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) : this(inputs, 0.9, matrixOperator, matrixProvider) { }
 
@@ -43,14 +47,14 @@ namespace Logica {
             this._matrixOperator = matrixOperator;
             this._defaultActivation = new ActivationFunction(
                     x => { return 1 / (1 + Math.Exp(-x)); },
-                    y => { return y * (1 - y);
-                });
+                    y => { return y * (1 - y); }
+                 );
         }
 
         public void AddLayer(double[,] layer, double[,] bias) {
             AddLayer(layer, bias, _defaultActivation);
         }
-        
+
         public void AddLayer(int nodes) {
             AddLayer(nodes, _defaultActivation);
         }
@@ -77,50 +81,54 @@ namespace Logica {
             _activationFunctions.Add(activation);
         }
 
-        private Matrix Predict(double[] inputObject, bool keepMemory) {
-            if (_matrixList.Count == 0) throw new MLProcessingException();
-            var inputMatrix = _matrixProvider.FromArray(inputObject);
-            var processMatrix = _matrixOperator.Transpose(inputMatrix);
-            if (keepMemory) _memoryList.Add(processMatrix);
-            for (int i = 0; i < _matrixList.Count; i++) {
-                processMatrix = _matrixOperator.Dot(_matrixList[i], processMatrix);
-                processMatrix = _matrixOperator.Add(processMatrix, _biasList[i]);
-                processMatrix.Map((double x) => {// casting because of ambiguous Func<Matrix, Matrix> and Func<double,double>
-                    return x.Map(_activationFunctions[i].Forward);
-                });
-                if (keepMemory) _memoryList.Add(processMatrix);
-            }
-            return processMatrix;
-        }
-
         public override Matrix Predict(double[] inputObject) {
             return Predict(inputObject, false);
         }
 
+        private Matrix Predict(double[] inputObject, bool keepMemory) {
+            if (_matrixList.Count == 0) throw new MLProcessingException($"cannot process inputs with {_matrixList.Count} layers in network");
+            var inputMatrix = _matrixProvider.FromArray(inputObject);
+            var processMatrix = _matrixOperator.Transpose(inputMatrix);
+            if (keepMemory) _memoryList.Add(processMatrix);
+            try {
+                for (int i = 0; i < _matrixList.Count; i++) {
+                    processMatrix = _matrixOperator.Dot(_matrixList[i], processMatrix);
+                    processMatrix = _matrixOperator.Add(processMatrix, _biasList[i]);
+                    processMatrix.Map((double x) => {// casting because of ambiguous Func<Matrix, Matrix> and Func<double,double>
+                        return x.Map(_activationFunctions[i].Forward);
+                    });
+                    if (keepMemory) _memoryList.Add(processMatrix);
+                }
+                return processMatrix;
+            }
+            catch(MatrixMismatchException e) {
+                throw new MLProcessingException($"error while operating on matrixes\n{e.Message}\n{e.StackTrace}");
+            }
+            catch(Exception e) {
+                throw new MLProcessingException($"general error occured\n{e.Message}\n{e.StackTrace} during processing of input");
+            }
+        }
+
         public override void Train(List<double[]> trainingInput, List<double[]> trainingOutput) {
-            if (trainingInput.Count != trainingOutput.Count) throw new MLProcessingException($"length of input({trainingInput.Count}) and target({trainingOutput.Count}) arrays must be equal");
+            if (trainingInput.Count != trainingOutput.Count) throw new MLProcessingException($"length of input list ({trainingInput.Count}) and target list ({trainingOutput.Count}) arrays must be equal");
+            if (trainingInput[0].Length != Inputs) throw new MLProcessingException($"number of inputs ({trainingInput[0].Length}) input nodes({Inputs}) must be equal");
+            if (trainingOutput[0].Length != Outputs) throw new MLProcessingException($"number of outputs ({trainingOutput[0].Length}) output nodes({Outputs}) must be equal");
             int random = new Random().Next(trainingInput.Count);
             Matrix currentOutput = _matrixProvider.FromArray(trainingOutput[random]);
             currentOutput = _matrixOperator.Transpose(currentOutput);
             Matrix prediction = Predict(trainingInput[random], true);
-            Matrix error = _matrixOperator.Add(currentOutput, _matrixProvider.Copy(prediction).Map((double x) => { return -x; }));
+            Matrix error = _matrixOperator.Subtract(currentOutput, prediction);
             
             // backpropagate
-            List<Matrix> errorList = new List<Matrix>(_matrixList.Count);
-            for (int i = 0; i < _matrixList.Count; i++) errorList.Add(_matrixProvider.Zero(1, 1));
-            errorList[errorList.Count-1] = error;
-            for(int i=errorList.Count-2;i>=0;i--) {
+            Matrix[] errorList = new Matrix[_matrixList.Count];
+            errorList[errorList.Length - 1] = error;
+            for (int i = errorList.Length - 2; i >= 0; i--)
                 errorList[i] = _matrixOperator.Dot(_matrixOperator.Transpose(_matrixList[i + 1]), errorList[i + 1]);
-            }
 
             // update values
-            for(int i=0;i<_matrixList.Count;i++) {
-                if (i == 1) Console.WriteLine(_memoryList[i + 1].Serialize());
+            for (int i = 0; i < _matrixList.Count; i++) {
                 var gradient = _memoryList[i + 1].Map(_activationFunctions[i].Backward);
-                if (i==1)Console.WriteLine(gradient.Serialize());
-                if(i==1)Console.WriteLine("");
                 gradient = _matrixOperator.Multiply(gradient, errorList[i]);
-                
                 gradient = gradient.Map((double x) => { return x * TrainingRate; });
 
                 _biasList[i] = _matrixOperator.Add(_biasList[i], gradient);
@@ -130,11 +138,6 @@ namespace Logica {
                 _matrixList[i] = _matrixOperator.Add(_matrixList[i], delta);
             }
             _memoryList = new List<Matrix>(); // memory clean
-            //Console.WriteLine(errorList[errorList.Count - 1].Serialize());
-        }
-
-        public void Initialize() {
-            throw new NotImplementedException();
         }
 
         public void Load() {

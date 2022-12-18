@@ -8,8 +8,7 @@ namespace Logica {
         public MatrixOperator() { } //async all this
 
         public Matrix Add(Matrix mat1, Matrix mat2) {
-
-            if (mat1.Rows != mat2.Rows || mat1.Columns != mat2.Columns) throw new MatrixMismatchException();
+            if (mat1.Rows != mat2.Rows || mat1.Columns != mat2.Columns) throw new MatrixMismatchException($"can only add matrixes of the same size");
             var result = new Matrix(mat1.Rows, mat1.Columns);
             for (int i = 0; i < result.Rows; i++) {
                 for (int j = 0; j < result.Columns; j++) {
@@ -17,7 +16,17 @@ namespace Logica {
                 }
             }
             return result;
-            
+        }
+
+        public Matrix Subtract(Matrix mat1, Matrix mat2) {
+            if (mat1.Rows != mat2.Rows || mat1.Columns != mat2.Columns) throw new MatrixMismatchException($"can only add matrixes of the same size");
+            var result = new Matrix(mat1.Rows, mat1.Columns);
+            for (int i = 0; i < result.Rows; i++) {
+                for (int j = 0; j < result.Columns; j++) {
+                    result[i, j] = mat1[i, j] - mat2[i, j];
+                }
+            }
+            return result;
         }
 
         public Matrix Dot(Matrix mat1, Matrix mat2) {
@@ -37,6 +46,7 @@ namespace Logica {
         }
 
         public Matrix Multiply(Matrix mat1, Matrix mat2) {
+            if (mat1.Columns != mat2.Columns || mat1.Rows != mat2.Rows) throw new MatrixMismatchException($"can only add matrixes of the same size maybe you are looking for IMatrixProvider:Dot(Matrix, Matrix)");
             Matrix result = new Matrix(mat1.Rows, mat1.Columns);
             for(int row = 0; row < result.Rows; row++) {
                 for(int col = 0;col<result.Columns; col++) {
