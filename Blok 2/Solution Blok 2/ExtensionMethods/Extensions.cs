@@ -15,6 +15,16 @@ namespace ExtensionMethods {
             return value;
         }
 
+        public static Matrix MapCopy(this Matrix value, Func<double, double> mappingMethod) {
+            Matrix result = new Matrix(value.Rows, value.Columns);
+            for (int i = 0; i < value.Rows; i++) {
+                for (int j = 0; j < value.Columns; j++) {
+                    result[i, j] = value[i, j].Map(mappingMethod);
+                }
+            }
+            return result;
+        }
+
         public static Matrix Map(this Matrix value, Func<Matrix, Matrix> mappingMethod) {//for value calculation depending on multiple value
             return mappingMethod(value);
         }

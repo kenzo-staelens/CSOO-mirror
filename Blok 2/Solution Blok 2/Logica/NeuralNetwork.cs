@@ -26,12 +26,16 @@ namespace Logica {
         public int Inputs { get; }
         public int Outputs {
             get {
-                return _matrixList[_matrixList.Count-1].Rows;
+                try {
+                    return _matrixList[_matrixList.Count - 1].Rows;
+                } catch(ArgumentOutOfRangeException) {
+                    return Inputs;
+                }
             }
         }
 
 
-        public NeuralNetwork(int inputs, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) : this(inputs, 0.9, matrixOperator, matrixProvider) { }
+        public NeuralNetwork(int inputs, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) : this(inputs, 0.5, matrixOperator, matrixProvider) { }
 
         public NeuralNetwork(int inputs, double trainingRate, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) {
             if (inputs <= 0) throw new ArgumentException("expecting at least 1 input");
@@ -117,6 +121,7 @@ namespace Logica {
             Matrix currentOutput = _matrixProvider.FromArray(trainingOutput[random]);
             currentOutput = _matrixOperator.Transpose(currentOutput);
             Matrix prediction = Predict(trainingInput[random], true);
+            
             Matrix error = _matrixOperator.Subtract(currentOutput, prediction);
             
             // backpropagate
@@ -127,12 +132,12 @@ namespace Logica {
 
             // update values
             for (int i = 0; i < _matrixList.Count; i++) {
-                var gradient = _memoryList[i + 1].Map(_activationFunctions[i].Backward);
+                var gradient = _memoryList[i + 1].MapCopy(_activationFunctions[i].Backward);
                 gradient = _matrixOperator.Multiply(gradient, errorList[i]);
                 gradient = gradient.Map((double x) => { return x * TrainingRate; });
-
+                
                 _biasList[i] = _matrixOperator.Add(_biasList[i], gradient);
-
+                
                 var memTranspose = _matrixOperator.Transpose(_memoryList[i]);
                 var delta = _matrixOperator.Dot(gradient, memTranspose);
                 _matrixList[i] = _matrixOperator.Add(_matrixList[i], delta);
