@@ -27,8 +27,6 @@ namespace Globals {
             set { MatrixData[i, j] = value; }
         }
 
-
-
         public Matrix(Matrix mat) {
             this.MatrixData = new double[mat.Rows, mat.Columns];
             for (int i = 0; i < this.Rows; i++) { // array is reference type

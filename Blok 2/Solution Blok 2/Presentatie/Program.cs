@@ -30,13 +30,17 @@ internal class Program {
         };
 
         //nn.TrainingRate = 0.9;
-
-        for (int i = 0; i < 1000000; i++) {
+        
+        for (int i = 0; i < 10000; i++) {
+            if (i % 100 == 0) Console.WriteLine(i);
             nn.Train(traindata, trainout);
         }
+        
+        
         Console.WriteLine(nn.Predict(new double[] { 0,0}).Serialize());
         Console.WriteLine(nn.Predict(new double[] { 0,1}).Serialize());
         Console.WriteLine(nn.Predict(new double[] { 1,0}).Serialize());
-        Console.WriteLine(nn.Predict(new double[] { 1, 1}).Serialize());
+        Console.WriteLine(nn.Predict(new double[] { 1,1}).Serialize());
+        
     }
 }
