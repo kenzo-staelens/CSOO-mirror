@@ -8,7 +8,7 @@ namespace Globals {
     /// <summary>
     /// klasse voor excepties te maken met matrix dimenties
     /// </summary>
-    /// <see cref="https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-create-localized-exception-messages"/>
+    /// <see cref="https:// learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-create-localized-exception-messages"/>
     [Serializable]
     public class MatrixMismatchException : Exception {
 

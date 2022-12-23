@@ -78,7 +78,7 @@ namespace Globals {
         /// <param name="matrix"></param>
         /// <param name="columnNumber"></param>
         /// <returns></returns>
-        /// <see cref="https://stackoverflow.com/questions/27427527/how-to-get-a-complete-row-or-column-from-2d-array-in-c-sharp"/>
+        /// <see cref="https:// stackoverflow.com/questions/27427527/how-to-get-a-complete-row-or-column-from-2d-array-in-c-sharp"/>
         public double[] GetColumn(int columnNumber) {
             var temp = MatrixData; // cannot access MatrixData in struct from anonymous lamdba
             return Enumerable.Range(0, this.Rows)
@@ -92,7 +92,7 @@ namespace Globals {
         /// <param name="matrix"></param>
         /// <param name="rowNumber"></param>
         /// <returns></returns>
-        /// <see cref="https://stackoverflow.com/questions/27427527/how-to-get-a-complete-row-or-column-from-2d-array-in-c-sharp"/>
+        /// <see cref="https:// stackoverflow.com/questions/27427527/how-to-get-a-complete-row-or-column-from-2d-array-in-c-sharp"/>
         public double[] GetRow(int rowNumber) {
             var temp = MatrixData; // cannot access MatrixData in struct from anonymous lamdba
             return Enumerable.Range(0, this.Columns)

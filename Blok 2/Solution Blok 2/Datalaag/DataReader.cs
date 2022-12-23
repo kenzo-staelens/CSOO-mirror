@@ -1,0 +1,47 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Datalaag {
+    public static class DataReader {
+        /// <summary>
+        /// leest binary data van een file
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        /// <see cref="https://stackoverflow.com/questions/18331349/net-4-5-file-read-performance-sync-vs-async"/>
+        public static async Task<byte[]> ReadAllFileAsync(string filename) {
+            byte[] buff;
+            using (var file = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true)) {
+                buff = new byte[file.Length];
+                await file.ReadAsync(buff, 0, (int)file.Length);
+                return buff;
+            }
+        }
+
+        /// <summary>
+        /// verwerking "raw data" in mnist files
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        /// <see cref="http://yann.lecun.com/exdb/mnist/"/>
+        public static async Task<List<double[]>> ReadMnistAsync(string filename) {
+            byte[] buff = await ReadAllFileAsync(filename);
+            int magicnum = (buff[0] << 24) + (buff[1] << 16) + (buff[2] << 8) + (buff[3]);
+            int count = (buff[4] << 24) + (buff[5] << 16) + (buff[6] << 8) + (buff[7]);
+            switch (magicnum) {
+                case 2051: // images; row & col altijd 28
+                    return buff.Skip(16).AsParallel().Select((x, i) => new { Index = i, Value = x })
+                        .GroupBy(x => x.Index / (28*28))
+                        .Select(x => x.Select(v => (double)v.Value).ToArray())
+                        .ToList();
+                case 2049: // labels
+                    return buff.Skip(8).AsParallel().Select(x => new double[] { x }).ToList();
+            }
+            return null;
+        }
+    }
+}

@@ -10,7 +10,7 @@ using Datalaag;
 
 internal class Program {
     private static void Main(string[] args) {
-        MatrixOperator mo = new MatrixOperator();
+        IMatrixOperator mo = new MatrixOperator();
         IMatrixProvider mp = new MatrixProvider();
         NeuralNetwork nn = new NeuralNetwork(2, mo, mp);
         nn.AddLayer(2);
@@ -29,9 +29,9 @@ internal class Program {
             new double[] { 0}
         };
 
-        //nn.TrainingRate = 0.9;
+        // nn.TrainingRate = 0.9;
         
-        for (int i = 0; i < 10000; i++) {
+        /*for (int i = 0; i < 10000; i++) {
             if (i % 100 == 0) Console.WriteLine(i);
             nn.Train(traindata, trainout);
         }
@@ -41,6 +41,12 @@ internal class Program {
         Console.WriteLine(nn.Predict(new double[] { 0,1}).Serialize());
         Console.WriteLine(nn.Predict(new double[] { 1,0}).Serialize());
         Console.WriteLine(nn.Predict(new double[] { 1,1}).Serialize());
+        */
+        var task = DataReader.ReadMnistAsync("./Resources/train-images.idx3-ubyte");
         
+        //byte[] t = task.Result;
+
+        Console.WriteLine(task.Result);
+
     }
 }
