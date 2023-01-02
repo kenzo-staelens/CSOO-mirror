@@ -34,12 +34,14 @@ namespace Datalaag {
             int count = (buff[4] << 24) + (buff[5] << 16) + (buff[6] << 8) + (buff[7]);
             switch (magicnum) {
                 case 2051: // images; row & col altijd 28
+                    //.Skip(16).Take(maxcount)...
                     return buff.Skip(16).AsParallel().Select((x, i) => new { Index = i, Value = x })
                         .GroupBy(x => x.Index / (28*28))
                         .Select(x => x.Select(v => (double)v.Value).ToArray())
                         .ToList();
                 case 2049: // labels
-                    return buff.Skip(8).AsParallel().Select(x => new double[] { x }).ToList();
+                    //return buff.Skip(8).AsParallel().Select(x => new double[] { x }).ToList();
+                    return (from x in buff select new double[] { x }).Skip(8).AsParallel().ToList();
             }
             return null;
         }

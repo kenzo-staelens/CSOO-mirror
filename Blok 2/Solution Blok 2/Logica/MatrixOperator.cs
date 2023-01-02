@@ -188,5 +188,56 @@ namespace Logica {
             WaitHandle.WaitAll(waitHandles);
             return result;
         }
+
+        public Matrix Correlate(Matrix mat1, Matrix kernel) {
+            Matrix result = new Matrix(mat1.Rows - kernel.Rows + 1,mat1.Columns-kernel.Columns+1);
+            for(int i = 0; i < result.Rows; i++) {
+                for(int j = 0; j < result.Columns; j++) {
+                    result[i, j] = correlateHelper(mat1, kernel, i, j);
+                }
+            }
+            return result;
+        }
+
+        private double correlateHelper(Matrix mat1, Matrix kernel, int i, int j) {
+            double sum = 0;
+            for(int k = 0; k < kernel.Rows; k++) {
+                for(int l = 0; l < kernel.Columns; l++) {
+                    sum += mat1[i + k, j + l] * kernel[k, l];
+                }
+            }
+            return sum; // / (kernel.Rows * kernel.Columns);
+        }
+
+        public Matrix Convolve(Matrix mat1, Matrix kernel) {
+            Matrix rotate = Rotate180(kernel);
+            return Correlate(mat1, rotate);
+        }
+
+        public Matrix Rotate180(Matrix mat) {
+            Matrix mirror = new Matrix(mat.Rows, mat.Columns);
+            for (int row = 0; row < mat.Rows; row++) {
+                for(int col = 0; col < mat.Columns; col++) {
+                    mirror[row, mat.Columns-col-1] = mat[row, col];
+                }
+            }
+            Matrix result = new Matrix(mat.Rows, mat.Columns);
+            for (int row = 0; row < mat.Rows; row++) {
+                for (int col = 0; col < mat.Columns; col++) {
+                    result[mat.Rows-row-1, col] = mirror[row, col];
+                }
+            }
+            return result;
+        }
+
+        public Matrix Pad(Matrix mat, int top, int bottom, int left, int right) {
+            Matrix result = new Matrix(mat.Rows + left + right, mat.Columns + top + bottom);
+            for (int i = 0; i < mat.Rows; i++) {
+                for (int j = 0; j < mat.Columns; j++) {
+                    result[i+top,j+left] = mat[i,j];
+                }
+            }
+            return result;
+        }
     }
 }
