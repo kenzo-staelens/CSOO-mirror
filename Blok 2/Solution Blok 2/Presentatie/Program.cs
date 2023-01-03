@@ -7,36 +7,58 @@ using Logica;
 using Globals;
 using ExtensionMethods;
 using Datalaag;
+using System.Security.Cryptography.X509Certificates;
 
 internal class Program {
     private static void Main(string[] args) {
         IMatrixOperator mo = new MatrixOperator();
         IMatrixProvider mp = new MatrixProvider();
 
-        Neural2 nn = new Neural2(9, mo, mp);
-        nn.AddReshapeLayer(new int[] { 9, 1 }, new int[] { 3, 3, 1 });
-        nn.AddConvolutionLayer(new int[] { 3, 3, 1 }, 3, 3);
+        Console.WriteLine("\nwaarschuwing: data inladen kan soms lang duren");
+        var trainImages = DataReader.ReadMnistAsync("./Resources/t10k-images.idx3-ubyte");
+        var trainLabels = DataReader.ReadMnistAsync("./Resources/t10k-labels.idx1-ubyte");
+        var trainImageResult = trainImages.Result;
+        var trainLabelResult = trainLabels.Result;
+
+        var images = DataReader.ReadMnistAsync("./Resources/train-images.idx3-ubyte");
+        var labels = DataReader.ReadMnistAsync("./Resources/train-labels.idx1-ubyte");
+        var imageResult = images.Result;
+        var labelResult = labels.Result;
+
+        List<double[]> filteredImages = new List<double[]>();
+        List<double[]> filteredLabels = new List<double[]>();
+        for (int i = 0; i < labelResult.Count; i++) {
+            if (labelResult[i][0] == 0 || labelResult[i][0] == 1) {
+                filteredImages.Add(imageResult[i]);
+                filteredLabels.Add(labelResult[i]);
+            }
+        }
+
+        List<double[]> trainFilteredImages = new List<double[]>();
+        List<double[]> trainFilteredLabels = new List<double[]>();
+        for (int i = 0; i < labelResult.Count; i++) {
+            if (trainLabelResult[i][0] == 0 || trainLabelResult[i][0] == 1) {
+                trainFilteredImages.Add(trainImageResult[i]);
+                trainFilteredLabels.Add(trainLabelResult[i]);
+            }
+        }
+
+        foreach (var val in filteredImages) sanitize(val, 0, 255);
+        foreach (var val in trainFilteredImages) sanitize(val, 0, 255);
+
+        // gebruik "sanitaire" waarden voor input (tussen 0 en 1) anders kan vaak NAN voorkomen
+
+        Neural2 nn = new Neural2(2, mo, mp);
+        nn.AddReshapeLayer(new int[] { 28 * 28, 1 }, new int[] { 28, 28, 1 });
+        nn.AddConvolutionLayer(new int[] { 28, 28, 1 }, 3, 5);
         nn.addActivation(ActivationType.SIGMOID);
-        nn.AddReshapeLayer(new int[] { 1, 1, 3 }, new int[] { 3, 1 });
-        nn.AddDenseLayer(1);
+        nn.AddReshapeLayer(new int[] { 5, 26, 26 }, new int[] { 5 * 26 * 26 * 1 });
+        nn.AddDenseLayer(100);
+        nn.addActivation(ActivationType.SIGMOID);
+        nn.AddDenseLayer(2);
         nn.addActivation(ActivationType.SIGMOID);
 
-        //Console.WriteLine(nn.Predict(new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }).Serialize());
-
-        List<double[]> traindata = new List<double[]>() {
-            new double[] { 9, 4, 8, 5, 3, 7, 6, 2, 1 }, //random
-            new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, //sorted
-            new double[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 }, //sorted
-            new double[] { 4, 8, 7, 1, 2, 3, 9, 5, 6 }  //random
-        };
-        List<double[]> trainout = new List<double[]>() {
-            new double[] { 0},
-            new double[] { 1},
-            new double[] { 1},
-            new double[] { 0}
-        };
-
-        nn.TrainingRate = 0.9;
+        nn.TrainingRate = 0.1;
 
         // binary cross entropy
         Func<Matrix, Matrix, double> loss = (Matrix expected, Matrix predicted) => {
@@ -56,20 +78,40 @@ internal class Program {
             }
             return result;
         };
-           
-        nn.Train(traindata, trainout, loss, lossPrime, 80000,0.00005);
-        
-        Console.WriteLine(nn.Predict(new double[] { 9, 4, 8, 5, 3, 7, 6, 2, 1 }).Serialize());
-        Console.WriteLine(nn.Predict(new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }).Serialize());
-        Console.WriteLine(nn.Predict(new double[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 }).Serialize());
-        Console.WriteLine(nn.Predict(new double[] { 4, 8, 7, 1, 2, 3, 9, 5, 6 }).Serialize());
 
-        //Console.WriteLine("waarschuwing: data inladen kan soms lang duren hou het tot op zijn meest 10000 images");
-        //var task = DataReader.ReadMnistAsync("./Resources/t10k-labels.idx3-ubyte");
+        nn.Train(trainFilteredImages, trainFilteredLabels, loss, lossPrime, 20, 0.0000001);
 
-        //byte[] t = task.Result;
+        for(int i=0;i<filteredImages.Count;i++) {
+            var output = nn.Predict(filteredImages[i]);
+            Console.WriteLine($"expected: {filteredLabels[i]}, result: {output}");
+        }
 
-        //Console.WriteLine(task.Result);
+        //foreach (var val in imageresult) Console.WriteLine(printArray(val));
+        //foreach (var val in imageResult) sanitize(val, 0, 255);
 
+
+    }
+
+    static double[] sanitize(double[] arr, double min, double max) {
+        for (int i = 0; i < arr.Length; i++) {
+            arr[i] /= (max - min);
+        }
+        return arr;
+    }
+
+    static string printArray(double[] arr) {
+        string txt = "";
+        string format = "{1,3}";
+        for (int i = 1; i < 28; i++) { format += ", {" + i.ToString() + ",3}"; }
+        for (int i = 0; i < arr.Length; i += 28) {
+            string formatted = String.Format(format,
+                arr[0 + i], arr[1 + i], arr[2 + i], arr[3 + i], arr[4 + i], arr[5 + i], arr[6 + i], arr[7 + i],
+                arr[8 + i], arr[9 + i], arr[10 + i], arr[11 + i], arr[12 + i], arr[13 + i], arr[14 + i], arr[15 + i],
+                arr[16 + i], arr[17 + i], arr[18 + i], arr[19 + i], arr[20 + i], arr[21 + i], arr[22 + i], arr[23 + i],
+                arr[24 + i], arr[25 + i], arr[26 + i], arr[27 + i]
+                );
+            txt += formatted + "\n";
+        }
+        return txt;
     }
 }
