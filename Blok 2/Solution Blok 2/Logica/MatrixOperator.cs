@@ -206,7 +206,7 @@ namespace Logica {
                     sum += mat1[i + k, j + l] * kernel[k, l];
                 }
             }
-            return sum; // / (kernel.Rows * kernel.Columns);
+            return sum;
         }
 
         public Matrix Convolve(Matrix mat1, Matrix kernel) {

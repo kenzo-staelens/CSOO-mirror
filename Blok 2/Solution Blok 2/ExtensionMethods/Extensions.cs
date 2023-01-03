@@ -24,9 +24,5 @@ namespace ExtensionMethods {
             }
             return result;
         }
-
-        public static Matrix Map(this Matrix value, Func<Matrix, Matrix> mappingMethod) {// for value calculation depending on multiple value
-            return mappingMethod(value);
-        }
     }
 }

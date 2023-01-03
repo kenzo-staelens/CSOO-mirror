@@ -37,7 +37,7 @@ namespace Logica {
             get {
                 return _depth;
             }
-                private set {
+            private set {
                 if (value <= 0) { throw new ArgumentException("invalid depth, expecting a minimum of 1 new channel"); }
                 _depth = value;
             }
@@ -52,53 +52,58 @@ namespace Logica {
             this._shape = shape;
             this._depth = depth;
             this._mode = mode;
-            this._matrixOperator= matrixOperator;
-            this._matrixProvider= matrixProvider;
+            this._matrixOperator = matrixOperator;
+            this._matrixProvider = matrixProvider;
+            this.UsesList = true;
             this._kernelShape = new int[] { kernelsize, kernelsize };
             KernelList = new List<List<Matrix>>();
             Biases = new List<Matrix>();
-            
-            for(int i = 0; i < depth; i++) {
+
+            for (int i = 0; i < depth; i++) {
                 List<Matrix> internalKernelList = new List<Matrix>();
-                for(int j = 0; j < shape[2]; j++) {
+                for (int j = 0; j < shape[2]; j++) {
                     internalKernelList.Add(_matrixProvider.Random(kernelsize, kernelsize));
                 }
                 KernelList.Add(internalKernelList);
                 Biases.Add(_matrixProvider.Random(shape[0] - kernelsize + 1, shape[1] - kernelsize + 1));
             }
         }
-        
-        public List<Matrix> Forward(List<Matrix> inputList) {
+
+        public override List<Matrix> Forward(List<Matrix> inputList) {
             _inputList = new List<Matrix>(inputList);
             _outputList = new List<Matrix>(Biases);
-            for (int i=0;i<Depth;i++) {
-                for(int j = 0; j < _shape[2]; j++) {
+            for (int i = 0; i < Depth; i++) {
+                for (int j = 0; j < _shape[2]; j++) {
                     Matrix input = inputList[j];
-                    if (_mode == CorrelationModes.SAME) input = _matrixOperator.Pad(inputList[j],1,1,1,1);
+                    if (_mode == CorrelationModes.SAME) input = _matrixOperator.Pad(inputList[j], 1, 1, 1, 1);
                     var correlated = _matrixOperator.Correlate(input, KernelList[i][j]);
                     _outputList[i] = _matrixOperator.Add(_outputList[i], correlated);
                 }
             }
+            _outputList.Insert(0, new Matrix(1, 1)); // never de-encapsulate
             return _outputList;
         }
 
-        public List<Matrix> Backward(List<Matrix> outputGradient, double rate) {
+        public override List<Matrix> Backward(List<Matrix> outputGradient, double rate) {
             var inputGradient = new List<Matrix>();
-            for(int i = 0; i < _shape[2]; i++) inputGradient.Add(_matrixProvider.Zero(_shape[0], _shape[1]));
+            for (int i = 0; i < _shape[2]; i++) inputGradient.Add(_matrixProvider.Zero(_shape[0], _shape[1]));
 
-            for(int i = 0; i < Depth; i++) {
-                for(int j = 0; j < _shape[2]; j++) { // TODO: uitzoeken hoe BACKWARD werkt met full convolution
+            for (int i = 0; i < Depth; i++) {
+                for (int j = 0; j < _shape[2]; j++) { // TODO: uitzoeken hoe BACKWARD werkt met full convolution
                     KernelList[i][j] = _matrixOperator.Subtract(KernelList[i][j],
-                        _matrixOperator.Correlate(_inputList[i], outputGradient[j]).Map((x) => { return x * rate; }));
+                        _matrixOperator.Correlate(_inputList[j], outputGradient[j])
+                        .Map((x) => { return x * rate; }));
                     inputGradient[j] = _matrixOperator.Add(inputGradient[j],
                         _matrixOperator.Convolve(
-                            _matrixOperator.Pad(outputGradient[j],1,1,1,1),
+                            _matrixOperator.Pad(outputGradient[j], KernelList[i][j].Rows - 1, KernelList[i][j].Rows - 1,
+                            KernelList[i][j].Columns - 1, KernelList[i][j].Columns - 1),
                             KernelList[i][j]));
                 }
             }
+
             for (int i = 0; i < Biases.Count; i++) Biases[i] = _matrixOperator.Subtract(Biases[i], outputGradient[i]);
             // outputGradient -> map al eerder uitgevoerd; Map (zonder copy) voert aanpassing uit op bestaande matrix, niet nogmaals nodig
-
+            inputGradient.Insert(0, new Matrix(1, 1)); // never de-encapsulate
             return inputGradient;
 
         }

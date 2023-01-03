@@ -43,7 +43,7 @@ namespace Logica {
         }
 
         public void AddDenseLayer(int nodes) {
-            if (nodes<=0) throw new ArgumentException("invalid number of nodes, expecting 1 or more");
+            if (nodes <= 0) throw new ArgumentException("invalid number of nodes, expecting 1 or more");
             Matrix weights;
             if (LayerList.Count == 0) {
                 weights = _matrixProvider.Random(nodes, Inputs);
@@ -55,64 +55,88 @@ namespace Logica {
             LayerList.Add(new DenseLayer(weights, biases, _matrixOperator));
         }
 
-        private double tanh(double x) { return (Math.Exp(2 * x) - 1) / (Math.Exp(2 * x) + 1); }
-        private double sigmoid(double x) { return 1 / (1 + Math.Exp(-x)); }
+        public void AddConvolutionLayer(int[] inputShape, int kernelsize, int depth) {
+            LayerList.Add(new ConvolutionLayer(inputShape, kernelsize, depth, _matrixOperator, _matrixProvider));
+        }
+
+        public void AddReshapeLayer(int[] inputShape, int[] outputShape) {
+            this.LayerList.Add(new ReshapeLayer(inputShape, outputShape));
+        }
 
         public void addActivation(ActivationType type) {
+            var layered = LayerList.Last().UsesList;
             switch (type) {
                 case ActivationType.SIGMOID:
-                    LayerList.Add(new ActivationLayer(Outputs,
-                        new ActivationFunction(
-                            sigmoid,
-                            y => { return sigmoid(y) * (1 - sigmoid(y)); }),
-                        _matrixOperator));
+                    LayerList.Add(new SigmoidLayer(Outputs, _matrixOperator));
                     break;
                 case ActivationType.TANH:
-                    LayerList.Add(new ActivationLayer(Outputs,
-                    new ActivationFunction(
-                            tanh,
-                            y => { return 1 - Math.Pow(tanh(y),2); }),
-                    _matrixOperator));
+                    LayerList.Add(new TanhLayer(Outputs,_matrixOperator));
                     break;
                 case ActivationType.CUSTOM:
                     throw new NotImplementedException();
-                    break;
             }
-
+            ((ActivationLayer)LayerList.Last()).SetLayered(layered);
         }
 
         public override Matrix Predict(double[] inputObject) {
             if (LayerList.Count == 0) throw new MLProcessingException($"cannot process inputs with {LayerList.Count} layers in network");
-            var processMatrix = _matrixProvider.FromArray(inputObject);
-            processMatrix = _matrixOperator.Transpose(processMatrix);
+            Matrix processMatrix = _matrixProvider.FromArray(inputObject);
+            Object processObj = _matrixOperator.Transpose(processMatrix);
 
             for (int i = 0; i < LayerList.Count; i++) {
-                processMatrix = LayerList[i].Forward(processMatrix);
+                if (LayerList[i].UsesList) {
+                    List<Matrix> processList;
+                    if (processObj.GetType().Name == "Matrix") {
+                        processList = new List<Matrix> { (Matrix)processObj };
+                    }
+                    else { processList = (List<Matrix>)processObj; }
+
+                    processObj = LayerList[i].Forward(processList);
+                    bool flag = ((List<Matrix>)processObj)[0][0, 0] == 1; // de-encapsulatie van reshape layer output als nodig
+                    ((List<Matrix>)processObj).RemoveAt(0);
+                    if (flag) processObj = ((List<Matrix>)processObj)[0];
+                }
+                else {
+                    processObj = LayerList[i].Forward((Matrix)processObj);
+                }
             }
-            return processMatrix;
+            return (Matrix)processObj;
         }
 
         public override void Train(List<double[]> trainingInput, List<double[]> trainingOutput) {
             throw new NotImplementedException();
         }
 
-        public void Train(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix,Matrix,double> loss, Func<Matrix, Matrix,Matrix> lossPrime) {
+        public void Train(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix, Matrix, double> loss, Func<Matrix, Matrix, Matrix> lossPrime, int epochs, double maxError) {
             if (trainingInput.Count != trainingOutput.Count) throw new MLProcessingException($"length of input list ({trainingInput.Count}) and target list ({trainingOutput.Count}) arrays must be equal");
             if (trainingInput[0].Length != Inputs) throw new MLProcessingException($"number of inputs ({trainingInput[0].Length}) input nodes({Inputs}) must be equal");
             if (trainingOutput[0].Length != Outputs) throw new MLProcessingException($"number of outputs ({trainingOutput[0].Length}) output nodes({Outputs}) must be equal");
-
-            double error = 0;
-            for (int i = 0; i < trainingInput.Count; i++) {
-                var expected = _matrixProvider.FromArray(trainingOutput[i]);
-                expected = _matrixOperator.Transpose(expected);
-                var output = Predict(trainingInput[i]);
-
-                error += loss(expected, output);
-
-                var gradient = lossPrime(expected,output);
+            for (int epoch = 0; epoch < epochs; epoch++) {
                 
-                for (int l = LayerList.Count - 1; l >= 0; l--) {
-                    gradient = LayerList[l].Backward(gradient, TrainingRate);
+                double error = 0;
+                for (int i = 0; i < trainingInput.Count; i++) {
+                    var expected = _matrixProvider.FromArray(trainingOutput[i]);
+                    expected = _matrixOperator.Transpose(expected);
+                    var output = Predict(trainingInput[i]);
+
+                    error += loss(expected, output);
+                    Object gradientObj = lossPrime(expected, output);
+
+                    for (int l = LayerList.Count - 1; l >= 0; l--) {
+                        if (LayerList[l].UsesList) {
+                            List<Matrix> gradientList;
+                            if (gradientObj.GetType().Name == "Matrix") gradientList = new List<Matrix> { (Matrix)gradientObj };
+                            else gradientList = (List<Matrix>)gradientObj;
+
+                            gradientObj = LayerList[l].Backward(gradientList, TrainingRate);
+                            bool flag = ((List<Matrix>)gradientObj)[0][0, 0] == 1;
+                            ((List<Matrix>)gradientObj).RemoveAt(0);
+                            if (flag) gradientObj = ((List<Matrix>)gradientObj)[0];
+                        }
+                        else gradientObj = LayerList[l].Backward((Matrix)gradientObj, TrainingRate);
+                    }
+                    if (epoch % 100 == 0 && epoch > 0) { Console.WriteLine($"epoch: {epoch}: error: {error / trainingInput.Count}"); }
+                    if (error / trainingInput.Count <= maxError) return;
                 }
             }
         }

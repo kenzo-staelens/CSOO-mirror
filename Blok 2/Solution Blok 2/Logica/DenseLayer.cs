@@ -21,6 +21,7 @@ namespace Logica {
             this.Weights=weights;
             this.Biases=biases;
             this._matrixOperator=matrixOperator;
+            this.UsesList= false;
         }
 
         public override Matrix Forward(Matrix input) {
@@ -44,6 +45,14 @@ namespace Logica {
             this.Weights = _matrixOperator.Subtract(this.Weights, weightGradient.Map((double x) => { return x * rate; }));
             this.Biases = _matrixOperator.Subtract(this.Biases, outputGradient.Map((double x) => { return x * rate; }));
             return inputGradient;
+        }
+
+        public override List<Matrix> Forward(List<Matrix> input) {
+            throw new NotImplementedException();
+        }
+
+        public override List<Matrix> Backward(List<Matrix> gradient, double rate) {
+            throw new NotImplementedException();
         }
     }
 }
