@@ -36,7 +36,7 @@ internal class Program {
 
         List<double[]> trainFilteredImages = new List<double[]>();
         List<double[]> trainFilteredLabels = new List<double[]>();
-        for (int i = 0; i < labelResult.Count; i++) {
+        for (int i = 0; i < trainLabelResult.Count; i++) {
             if (trainLabelResult[i][0] == 0 || trainLabelResult[i][0] == 1) {
                 trainFilteredImages.Add(trainImageResult[i]);
                 trainFilteredLabels.Add(trainLabelResult[i]);
