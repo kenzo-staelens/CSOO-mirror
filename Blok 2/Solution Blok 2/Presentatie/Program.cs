@@ -96,7 +96,7 @@ internal class Program {
 
         for(int i=0;i<testFilteredImages.Count;i++) {
             var output = nn.Predict(testFilteredImages[i]);
-            Console.WriteLine($"expected: {testFilteredLabels[i]}, result: {output}");
+            Console.WriteLine($"expected: {testFilteredLabels[i]}, result(rounded output): {Math.Round(output[0,0])}");
         }
 
         //foreach (var val in testImageresult) Console.WriteLine(printArray(val));
