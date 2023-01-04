@@ -70,7 +70,7 @@ namespace Logica {
                     LayerList.Add(new SigmoidLayer(Outputs, _matrixOperator));
                     break;
                 case ActivationType.TANH:
-                    LayerList.Add(new TanhLayer(Outputs,_matrixOperator));
+                    LayerList.Add(new TanhLayer(Outputs, _matrixOperator));
                     break;
                 case ActivationType.CUSTOM:
                     throw new NotImplementedException();
@@ -111,8 +111,8 @@ namespace Logica {
             if (trainingInput.Count != trainingOutput.Count) throw new MLProcessingException($"length of input list ({trainingInput.Count}) and target list ({trainingOutput.Count}) arrays must be equal");
             if (trainingInput[0].Length != Inputs) throw new MLProcessingException($"number of inputs ({trainingInput[0].Length}) input nodes({Inputs}) must be equal");
             if (trainingOutput[0].Length != Outputs) throw new MLProcessingException($"number of outputs ({trainingOutput[0].Length}) output nodes({Outputs}) must be equal");
-            for (int epoch = 0; epoch < epochs; epoch++) {
-                
+            for (int epoch = 1; epoch <= epochs; epoch++) {
+
                 double error = 0;
                 for (int i = 0; i < trainingInput.Count; i++) {
                     var expected = _matrixProvider.FromArray(trainingOutput[i]);
@@ -135,9 +135,10 @@ namespace Logica {
                         }
                         else gradientObj = LayerList[l].Backward((Matrix)gradientObj, TrainingRate);
                     }
-                    if (epoch % 100 == 0 && epoch > 0) { Console.WriteLine($"epoch: {epoch}: error: {error / trainingInput.Count}"); }
-                    if (error / trainingInput.Count <= maxError) return;
+                    /*if (i % 50 == 0 && i != 0) */ Console.WriteLine($"epoch: {epoch}({i}/{trainingInput.Count})");
                 }
+                Console.WriteLine($"epoch: {epoch}, error: {error / trainingInput.Count}");
+                if (error / trainingInput.Count <= maxError) return;
             }
         }
     }

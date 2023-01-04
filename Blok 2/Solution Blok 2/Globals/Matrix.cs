@@ -43,7 +43,7 @@ namespace Globals {
         public Matrix(double[] singleDim) {
             this.MatrixData = new double[1, singleDim.Length];
             for (int i = 0; i < singleDim.Length; i++) {
-                this.MatrixData[0, i]= singleDim[i];
+                this.MatrixData[0, i] = singleDim[i];
             }
         }
 

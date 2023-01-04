@@ -11,28 +11,19 @@ using System.Security.Cryptography.X509Certificates;
 
 internal class Program {
     private static void Main(string[] args) {
-        IMatrixOperator mo = new MatrixOperator();
+        const string trainPath = "./Resources/train-";
+        const string testPath = "./Resources/t10k-";
+        const string labelSuffix = "labels.idx1-ubyte";
+        const string imageSuffix = "images.idx3-ubyte";
+
+        IMatrixOperator mo = new MatrixOperator(500);
         IMatrixProvider mp = new MatrixProvider();
 
-        Console.WriteLine("\nwaarschuwing: data inladen kan soms lang duren");
-        var trainImages = DataReader.ReadMnistAsync("./Resources/t10k-images.idx3-ubyte");
-        var trainLabels = DataReader.ReadMnistAsync("./Resources/t10k-labels.idx1-ubyte");
+        Console.WriteLine("waarschuwing: data inladen kan soms lang duren");
+        var trainImages = DataReader.ReadMnistFractionedAsync(trainPath+imageSuffix,0,10000);
+        var trainLabels = DataReader.ReadMnistFractionedAsync(trainPath+labelSuffix,0,10000);
         var trainImageResult = trainImages.Result;
         var trainLabelResult = trainLabels.Result;
-
-        var images = DataReader.ReadMnistAsync("./Resources/train-images.idx3-ubyte");
-        var labels = DataReader.ReadMnistAsync("./Resources/train-labels.idx1-ubyte");
-        var imageResult = images.Result;
-        var labelResult = labels.Result;
-
-        List<double[]> filteredImages = new List<double[]>();
-        List<double[]> filteredLabels = new List<double[]>();
-        for (int i = 0; i < labelResult.Count; i++) {
-            if (labelResult[i][0] == 0 || labelResult[i][0] == 1) {
-                filteredImages.Add(imageResult[i]);
-                filteredLabels.Add(labelResult[i]);
-            }
-        }
 
         List<double[]> trainFilteredImages = new List<double[]>();
         List<double[]> trainFilteredLabels = new List<double[]>();
@@ -43,19 +34,24 @@ internal class Program {
             }
         }
 
-        foreach (var val in filteredImages) sanitize(val, 0, 255);
+        trainImages = null; // cleanup van memory
+        trainLabels = null;
+        trainImageResult = null;
+        trainLabelResult = null;
+
+        // foreach (var val in testFilteredImages) sanitize(val, 0, 255);
         foreach (var val in trainFilteredImages) sanitize(val, 0, 255);
 
         // gebruik "sanitaire" waarden voor input (tussen 0 en 1) anders kan vaak NAN voorkomen
 
-        Neural2 nn = new Neural2(2, mo, mp);
+        Neural2 nn = new Neural2(784, mo, mp);
         nn.AddReshapeLayer(new int[] { 28 * 28, 1 }, new int[] { 28, 28, 1 });
         nn.AddConvolutionLayer(new int[] { 28, 28, 1 }, 3, 5);
         nn.addActivation(ActivationType.SIGMOID);
-        nn.AddReshapeLayer(new int[] { 5, 26, 26 }, new int[] { 5 * 26 * 26 * 1 });
+        nn.AddReshapeLayer(new int[] { 26, 26, 5 }, new int[] { 26 * 26 * 5, 1 });
         nn.AddDenseLayer(100);
         nn.addActivation(ActivationType.SIGMOID);
-        nn.AddDenseLayer(2);
+        nn.AddDenseLayer(1);
         nn.addActivation(ActivationType.SIGMOID);
 
         nn.TrainingRate = 0.1;
@@ -79,15 +75,31 @@ internal class Program {
             return result;
         };
 
-        nn.Train(trainFilteredImages, trainFilteredLabels, loss, lossPrime, 20, 0.0000001);
+        nn.Train(trainFilteredImages, trainFilteredLabels, loss, lossPrime, 20, 0);
 
-        for(int i=0;i<filteredImages.Count;i++) {
-            var output = nn.Predict(filteredImages[i]);
-            Console.WriteLine($"expected: {filteredLabels[i]}, result: {output}");
+        
+        var testImages = DataReader.ReadMnistAsync(testPath+imageSuffix);
+        var testLabels = DataReader.ReadMnistAsync(testPath+labelSuffix);
+        var testImageResult = testImages.Result;
+        var testLabelResult = testLabels.Result;
+        
+
+        List<double[]> testFilteredImages = new List<double[]>();
+        List<double[]> testFilteredLabels = new List<double[]>();
+        for (int i = 0; i < testLabelResult.Count; i++) {
+            if (testLabelResult[i][0] == 0 || testLabelResult[i][0] == 1) {
+                testFilteredImages.Add(testImageResult[i]);
+                testFilteredLabels.Add(testLabelResult[i]);
+            }
+        }
+        
+
+        for(int i=0;i<testFilteredImages.Count;i++) {
+            var output = nn.Predict(testFilteredImages[i]);
+            Console.WriteLine($"expected: {testFilteredLabels[i]}, result: {output}");
         }
 
-        //foreach (var val in imageresult) Console.WriteLine(printArray(val));
-        //foreach (var val in imageResult) sanitize(val, 0, 255);
+        //foreach (var val in testImageresult) Console.WriteLine(printArray(val));
 
 
     }

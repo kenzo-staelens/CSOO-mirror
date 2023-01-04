@@ -41,7 +41,25 @@ namespace Datalaag {
                         .ToList();
                 case 2049: // labels
                     //return buff.Skip(8).AsParallel().Select(x => new double[] { x }).ToList();
-                    return (from x in buff select new double[] { x }).Skip(8).AsParallel().ToList();
+                    return (from x in buff select new double[] { x }).Skip(8).ToList();
+            }
+            return null;
+        }
+
+        public static async Task<List<double[]>> ReadMnistFractionedAsync(string filename, int skippedImages, int images) {
+            byte[] buff = await ReadAllFileAsync(filename);
+            int magicnum = (buff[0] << 24) + (buff[1] << 16) + (buff[2] << 8) + (buff[3]);
+            int count = (buff[4] << 24) + (buff[5] << 16) + (buff[6] << 8) + (buff[7]);
+            switch (magicnum) {
+                case 2051: // images; row & col altijd 28
+                    //.Skip(16).Take(maxcount)...
+                    return buff.Skip(16).Skip(28*28*skippedImages).Take(28 * 28 * images).AsParallel().Select((x, i) => new { Index = i, Value = x })
+                        .GroupBy(x => x.Index / (28 * 28))
+                        .Select(x => x.Select(v => (double)v.Value).ToArray())
+                        .ToList();
+                case 2049: // labels
+                    //return buff.Skip(8).AsParallel().Select(x => new double[] { x }).ToList();
+                    return (from x in buff select new double[] { x }).Skip(8).Skip(skippedImages).Take(images).ToList();
             }
             return null;
         }
