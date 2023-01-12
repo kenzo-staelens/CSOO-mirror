@@ -11,6 +11,10 @@ using ExtensionMethods;
 using System.Linq.Expressions;
 
 namespace Logica {
+    /// <summary>
+    /// deprecated class, gebruik Neural2 in plaats
+    /// deze klasse kan enkel dense layers gebruiken
+    /// </summary>
     public class NeuralNetwork : MachineLearningModel {
 
         private IMatrixProvider _matrixProvider;
