@@ -5,11 +5,16 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
+using System.Xml;
+using System.Runtime.ConstrainedExecution;
 
 namespace Globals {
+    [Serializable]
     public struct Matrix : IEnumerable {
 
         public double[,] MatrixData { get; set; }
+
         public int Rows {
             get {
                 return MatrixData.GetLength(0);
@@ -47,6 +52,8 @@ namespace Globals {
             }
         }
 
+        public Matrix(double[][] matrix) : this(convert(matrix)) { }
+
         public Matrix(double[,] matrix) {
             this.MatrixData = new double[matrix.GetLength(0), matrix.GetLength(1)];
             for (int i = 0; i < this.Rows; i++) {
@@ -57,19 +64,31 @@ namespace Globals {
         }
 
         public string Serialize() {
-            var s = "{ ";
-            for (int row = 0; row < Rows - 1; row++) {
-                s += $"{SerializeRow(GetRow(row))}, ";
+            MemoryStream ms = new MemoryStream();
+            XmlTextWriter streamWriter = new XmlTextWriter(ms, Encoding.UTF8);
+            streamWriter.Formatting = Formatting.Indented;
+            XmlSerializer ser = new XmlSerializer(typeof(double[][]));
+            var jagged = new double[Rows][];
+
+            for (int i = 0; i < Rows; i++) {
+                jagged[i] = new double[Columns];
+
+                for (int j = 0; j < Columns; j++)
+                    jagged[i][j] = this[i, j];
             }
-            return $"{s}{SerializeRow(GetRow(Rows - 1))} }}";
+            ser.Serialize(streamWriter, jagged);
+
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
 
-        private string SerializeRow(double[] row) {
-            var s = "{ ";
-            for (int r = 0; r < row.Length - 1; r++) {
-                s += $"{row[r]}, ";
+        public static Matrix Deserialize(String xml) {
+            double[][] result;
+            XmlSerializer ser = new XmlSerializer(typeof(double[][]));
+            using (TextReader reader = new StringReader(xml)) {
+                Console.WriteLine("\n\n" + reader.ReadLine()); //weghalen ongeldige lijn
+                result = (double[][])ser.Deserialize(reader);
             }
-            return $"{s}{row[row.Length - 1]} }}";
+            return new Matrix(result);
         }
 
         /// <summary>
@@ -102,6 +121,16 @@ namespace Globals {
 
         IEnumerator IEnumerable.GetEnumerator() {
             return MatrixData.GetEnumerator();
+        }
+
+        private static double[,] convert(double[][] doubleArr) {
+            double[,] res = new double[doubleArr.Length, doubleArr[0].Length];
+            for (int i = 0; i < doubleArr.Length; i++) {
+                for (int j = 0; j < doubleArr[i].Length; j++) {
+                    res[i, j] = doubleArr[i][j];
+                }
+            }
+            return res;
         }
     }
 }
