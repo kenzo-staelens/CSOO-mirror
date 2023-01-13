@@ -135,7 +135,7 @@ opties voor uitvoeren van code:
                 }
             }
             Console.WriteLine(
-                FormatMnistArray(temp)  // duidelijk dat dit geen mnist array is, maar deze functie bestond nog sinds testen
+                FormatMnistArray(temp)  //duidelijk dat dit geen mnist array is, maar deze functie bestond nog sinds testen
             );
 
         }
