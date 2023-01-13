@@ -13,7 +13,7 @@ namespace Logica {
         public double TrainingRate {
             get { return _trainingRate; }
             set {
-                if (value > 1 || value < 0) throw new ArgumentException($"training rate {value} out of bounds [0,1]");
+                //if (value > 1 || value < 0) throw new ArgumentException($"training rate {value} out of bounds [0,1]");
                 _trainingRate = value;
             }
         }

@@ -9,6 +9,8 @@ namespace Logica {
     public class SigmoidLayer : ActivationLayer {
         private double sigmoid(double x) { return 1 / (1 + Math.Exp(-x)); }
 
+        public SigmoidLayer() { }
+
         /// <summary>
         /// extentie van activatie laag om Sigmoid direct te implementeren
         /// </summary>
@@ -17,7 +19,8 @@ namespace Logica {
         public SigmoidLayer(int nodes, IMatrixOperator matrixOperator) : base(nodes, new ActivationFunction(), matrixOperator) {
             ActivationFunction a = new ActivationFunction(
                             sigmoid,
-                            y => { return sigmoid(y) * (1 - sigmoid(y)); });
+                            y => { return y * 1 - y; });
+                            // y => { return sigmoid(y) * (1 - sigmoid(y)); });
             this.activation = a;
         }
     }

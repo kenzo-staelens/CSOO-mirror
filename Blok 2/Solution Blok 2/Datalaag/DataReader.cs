@@ -13,12 +13,13 @@ namespace Datalaag {
         /// <param name="filename"></param>
         /// <returns></returns>
         /// <see cref="https://stackoverflow.com/questions/18331349/net-4-5-file-read-performance-sync-vs-async"/>
-        public static async Task<byte[]> ReadAllFileAsync(string filename) {
-            byte[] buff;
+        public static async Task<MemoryStream> ReadAllFileAsync(string filename) {
+            MemoryStream ms = new MemoryStream();
             using (var file = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true)) {
-                buff = new byte[file.Length];
-                await file.ReadAsync(buff, 0, (int)file.Length);
-                return buff;
+                file.Position = 0;
+                file.CopyTo(ms);
+                ms.Position = 0;
+                return ms;
             }
         }
 
@@ -29,7 +30,9 @@ namespace Datalaag {
         /// <returns></returns>
         /// <see cref="http://yann.lecun.com/exdb/mnist/"/>
         public static async Task<List<double[]>> ReadMnistAsync(string filename) {
-            byte[] buff = await ReadAllFileAsync(filename);
+            MemoryStream ms = await ReadAllFileAsync(filename);
+            byte[] buff = new byte[ms.Length];
+            ms.Read(buff, 0, buff.Length);
             int magicnum = (buff[0] << 24) + (buff[1] << 16) + (buff[2] << 8) + (buff[3]);
             int count = (buff[4] << 24) + (buff[5] << 16) + (buff[6] << 8) + (buff[7]);
             switch (magicnum) {
@@ -47,7 +50,10 @@ namespace Datalaag {
         }
 
         public static async Task<List<double[]>> ReadMnistFractionedAsync(string filename, int skippedImages, int images) {
-            byte[] buff = await ReadAllFileAsync(filename);
+            MemoryStream ms = await ReadAllFileAsync(filename);
+            byte[] buff = new byte[ms.Length];
+            ms.Read(buff, 0, buff.Length);
+            //byte[] buff = await ReadAllFileAsync(filename);
             int magicnum = (buff[0] << 24) + (buff[1] << 16) + (buff[2] << 8) + (buff[3]);
             int count = (buff[4] << 24) + (buff[5] << 16) + (buff[6] << 8) + (buff[7]);
             switch (magicnum) {

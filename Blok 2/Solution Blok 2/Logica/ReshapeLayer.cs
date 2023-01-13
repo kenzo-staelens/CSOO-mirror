@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,9 +10,43 @@ namespace Logica {
     /// <summary>
     /// omzettingen tussen types input voor convolution laag (List<Matrix>) en dense laag (Matrix)
     /// </summary>
-    public class ReshapeLayer : Layer {
+    public class ReshapeLayer : Layer,ISerializable {
         private int[] _inputShape;
         private int[] _outputShape;
+
+        public int[] InputShape {
+            get {
+                return _inputShape;
+            }
+            set {
+                if (_inputShape != null) {
+                    int[] depth = new int[2];
+                    try { depth[0] = _inputShape[2]; }
+                    catch { depth[0] = 1; }
+                    try { depth[1] = value[2]; }
+                    catch { depth[1] = 1; }
+                    if (_inputShape[0] * _inputShape[1] * depth[0] == value[0] * value[1] * depth[1]) _inputShape = value;
+                }
+                else { _inputShape = value; }
+            }
+        }
+
+        public int[] OutputShape {
+            get {
+                return _outputShape;
+            }
+            set {
+                if (_outputShape != null) {
+                    int[] depth = new int[2];
+                    try { depth[0] = _inputShape[2]; }
+                    catch { depth[0] = 1; }
+                    try { depth[1] = value[2]; }
+                    catch { depth[1] = 1; }
+                    if (_outputShape[0] * _outputShape[1] * depth[0] == value[0] * value[1] * depth[1]) _outputShape = value;
+                }
+                else { _outputShape = value; }
+            }
+        }
 
         public override int Outputs {
             get {
@@ -20,7 +55,10 @@ namespace Logica {
                 return temp;
             }
         }
+        public ReshapeLayer() { }
+        public ReshapeLayer(SerializationInfo info, StreamingContext context) {
 
+        }
         public ReshapeLayer(int[] inputShape, int[] outputShape) {
             if ((inputShape.Length != 2 && inputShape.Length != 3) || (outputShape.Length != 2 && outputShape.Length != 3))
                 throw new ArgumentOutOfRangeException("shapes can only contain 2 or 3 dimensions");
@@ -81,6 +119,11 @@ namespace Logica {
         public override List<Matrix> Backward(List<Matrix> gradient, double rate) {
             return reshape(gradient, _outputShape, _inputShape);
             throw new NotImplementedException();
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            info.AddValue("InputShape", InputShape);
+            info.AddValue("OutputShape", OutputShape);
         }
     }
 }

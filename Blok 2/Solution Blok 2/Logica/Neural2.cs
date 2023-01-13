@@ -6,18 +6,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace Logica {
-    public class Neural2 : MachineLearningModel {
+    public class Neural2 : MachineLearningModel,ISerializable {
         public List<Layer> LayerList;
 
         private IMatrixProvider _matrixProvider;
         private IMatrixOperator _matrixOperator;
 
-        public int Inputs { get; }
+        public int Inputs;
         public int Outputs {
             get {
                 try {
@@ -27,6 +29,12 @@ namespace Logica {
                     return Inputs;
                 }
             }
+        }
+
+        public Neural2() { }
+        public Neural2(SerializationInfo info, StreamingContext context) {
+            Inputs = info.GetInt32("Inputs");
+            LayerList = (List<Layer>)info.GetValue("LayerList",typeof(List<Layer>));
         }
 
         public Neural2(int inputs, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) : this(inputs, 0.5, matrixOperator, matrixProvider) { }
@@ -140,6 +148,36 @@ namespace Logica {
                 Console.WriteLine($"epoch: {epoch}, error: {error / trainingInput.Count}");
                 if (error / trainingInput.Count <= maxError) return;
             }
+        }
+
+        public void TrainRandom(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix, Matrix, Matrix> lossPrime, int iterations) {
+            for(int i = 0; i < iterations; i++) {
+                int random = new Random().Next(trainingInput.Count);
+                Matrix expected = _matrixProvider.FromArray(trainingOutput[random]);
+                expected = _matrixOperator.Transpose(expected);
+                Matrix output = Predict(trainingInput[random]);                
+
+                Object gradientObj = lossPrime(expected, output);
+
+                for (int l = LayerList.Count - 1; l >= 0; l--) {
+                    if (LayerList[l].UsesList) {
+                        List<Matrix> gradientList;
+                        if (gradientObj.GetType().Name == "Matrix") gradientList = new List<Matrix> { (Matrix)gradientObj };
+                        else gradientList = (List<Matrix>)gradientObj;
+
+                        gradientObj = LayerList[l].Backward(gradientList, TrainingRate);
+                        bool flag = ((List<Matrix>)gradientObj)[0][0, 0] == 1;
+                        ((List<Matrix>)gradientObj).RemoveAt(0);
+                        if (flag) gradientObj = ((List<Matrix>)gradientObj)[0];
+                    }
+                    else gradientObj = LayerList[l].Backward((Matrix)gradientObj, TrainingRate);
+                }
+            }
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            info.AddValue("Inputs", Inputs);
+            info.AddValue("LayerList", LayerList);
         }
     }
 }

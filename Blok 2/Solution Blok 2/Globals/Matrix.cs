@@ -10,10 +10,33 @@ using System.Xml;
 using System.Runtime.ConstrainedExecution;
 
 namespace Globals {
-    [Serializable]
-    public struct Matrix : IEnumerable {
+    public struct Matrix : ISerializable {
 
+        [XmlIgnore]
         public double[,] MatrixData { get; set; }
+
+        public double[][] JaggedMatrix {
+            get {
+                var jagged = new double[Rows][];
+
+                for (int i = 0; i < Rows; i++) {
+                    jagged[i] = new double[Columns];
+
+                    for (int j = 0; j < Columns; j++)
+                        jagged[i][j] = this[i, j];
+                }
+                return jagged;
+            }
+            set {
+                double[,] res = new double[value.Length, value[0].Length];
+                for (int i = 0; i < value.Length; i++) {
+                    for (int j = 0; j < value[i].Length; j++) {
+                        res[i, j] = value[i][j];
+                    }
+                }
+                MatrixData = res;
+            }
+        }
 
         public int Rows {
             get {
@@ -30,6 +53,11 @@ namespace Globals {
         public double this[int i, int j] {
             get { return MatrixData[i, j]; }
             set { MatrixData[i, j] = value; }
+        }
+
+        public Matrix() { }
+        public Matrix(SerializationInfo info, StreamingContext context) {
+            JaggedMatrix = (double[][])info.GetValue("JaggedMatrix", typeof(double[][]));
         }
 
         public Matrix(Matrix mat) {
@@ -52,7 +80,9 @@ namespace Globals {
             }
         }
 
-        public Matrix(double[][] matrix) : this(convert(matrix)) { }
+        public Matrix(double[][] matrix) {
+            JaggedMatrix = matrix;
+        }
 
         public Matrix(double[,] matrix) {
             this.MatrixData = new double[matrix.GetLength(0), matrix.GetLength(1)];
@@ -61,34 +91,6 @@ namespace Globals {
                     this.MatrixData[i, j] = matrix[i, j];
                 }
             }
-        }
-
-        public string Serialize() {
-            MemoryStream ms = new MemoryStream();
-            XmlTextWriter streamWriter = new XmlTextWriter(ms, Encoding.UTF8);
-            streamWriter.Formatting = Formatting.Indented;
-            XmlSerializer ser = new XmlSerializer(typeof(double[][]));
-            var jagged = new double[Rows][];
-
-            for (int i = 0; i < Rows; i++) {
-                jagged[i] = new double[Columns];
-
-                for (int j = 0; j < Columns; j++)
-                    jagged[i][j] = this[i, j];
-            }
-            ser.Serialize(streamWriter, jagged);
-
-            return Encoding.UTF8.GetString(ms.ToArray());
-        }
-
-        public static Matrix Deserialize(String xml) {
-            double[][] result;
-            XmlSerializer ser = new XmlSerializer(typeof(double[][]));
-            using (TextReader reader = new StringReader(xml)) {
-                Console.WriteLine("\n\n" + reader.ReadLine()); //weghalen ongeldige lijn
-                result = (double[][])ser.Deserialize(reader);
-            }
-            return new Matrix(result);
         }
 
         /// <summary>
@@ -119,18 +121,8 @@ namespace Globals {
                     .ToArray();
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
-            return MatrixData.GetEnumerator();
-        }
-
-        private static double[,] convert(double[][] doubleArr) {
-            double[,] res = new double[doubleArr.Length, doubleArr[0].Length];
-            for (int i = 0; i < doubleArr.Length; i++) {
-                for (int j = 0; j < doubleArr[i].Length; j++) {
-                    res[i, j] = doubleArr[i][j];
-                }
-            }
-            return res;
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            info.AddValue("jaggedMatrix", JaggedMatrix);
         }
     }
 }

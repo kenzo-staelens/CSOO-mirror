@@ -1,9 +1,10 @@
 ﻿using Globals;
 using ExtensionMethods;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 namespace Logica {
-    public class DenseLayer : Layer {
+    public class DenseLayer : Layer, ISerializable {
         public override int Outputs {
             get {
                 return Weights.Rows;
@@ -17,11 +18,19 @@ namespace Logica {
 
         private IMatrixOperator _matrixOperator;
 
+        public DenseLayer() { }
+        public DenseLayer(SerializationInfo info, StreamingContext context) {
+            UsesList = info.GetBoolean("UsesList");
+            Weights = (Matrix)info.GetValue("Weights", typeof(Matrix));
+            Biases = (Matrix)info.GetValue("Biases", typeof(Matrix));
+        }
+
+        public DenseLayer(Matrix weights, Matrix biases) : this(weights, biases, new MatrixOperator()) { }
         public DenseLayer(Matrix weights, Matrix biases, IMatrixOperator matrixOperator) {
-            this.Weights=weights;
-            this.Biases=biases;
-            this._matrixOperator=matrixOperator;
-            this.UsesList= false;
+            this.Weights = weights;
+            this.Biases = biases;
+            this._matrixOperator = matrixOperator;
+            this.UsesList = false;
         }
 
         public override Matrix Forward(Matrix input) {
@@ -42,8 +51,8 @@ namespace Logica {
         public override Matrix Backward(Matrix outputGradient, double rate) {
             var weightGradient = _matrixOperator.Dot(outputGradient, _matrixOperator.Transpose(_input));
             var inputGradient = _matrixOperator.Dot(_matrixOperator.Transpose(Weights), outputGradient);
-            this.Weights = _matrixOperator.Subtract(this.Weights, weightGradient.Map((double x) => { return x * rate; }));
-            this.Biases = _matrixOperator.Subtract(this.Biases, outputGradient.Map((double x) => { return x * rate; }));
+            this.Weights = _matrixOperator.Subtract(this.Weights, weightGradient.MapCopy((double x) => { return x * rate; }));
+            this.Biases = _matrixOperator.Subtract(this.Biases, outputGradient.MapCopy((double x) => { return x * rate; }));
             return inputGradient;
         }
 
@@ -53,6 +62,12 @@ namespace Logica {
 
         public override List<Matrix> Backward(List<Matrix> gradient, double rate) {
             throw new NotImplementedException();
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            info.AddValue("UsesList", UsesList);
+            info.AddValue("Weights", Weights);
+            info.AddValue("Biases", Biases);
         }
     }
 }

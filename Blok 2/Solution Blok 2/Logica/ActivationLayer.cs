@@ -14,6 +14,8 @@ namespace Logica {
         private Object _input;
         private IMatrixOperator _matrixOperator;
 
+        public ActivationLayer() { }
+
         public ActivationLayer(int nodes, ActivationFunction func, IMatrixOperator matrixOperator) {
             this._outputs = nodes;
             this.activation = func;

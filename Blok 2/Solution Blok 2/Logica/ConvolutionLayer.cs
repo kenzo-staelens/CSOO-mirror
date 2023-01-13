@@ -4,6 +4,7 @@ using Globals;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,11 +15,22 @@ namespace Logica {
     /// class that handles convolution layer logic
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=Lakz2MoHy6o"/>
-    public class ConvolutionLayer : Layer {
-        private int[] _shape;
-        private int[] _kernelShape;
+    public class ConvolutionLayer : Layer,ISerializable {
+        public int[] Shape { get; }
+        
+        public int[] KernelShape {
+            get {
+                try {
+                    return new int[]{KernelList[0][0].Rows, KernelList[0][0].Columns};
+                }
+                catch {
+                    return new int[] { 0, 0 };
+                }
+            }
+        }
         private int _depth; // output depth
-        private CorrelationModes _mode;
+
+        public CorrelationModes Mode;
         private IMatrixOperator _matrixOperator;
         private IMatrixProvider _matrixProvider;
 
@@ -30,32 +42,40 @@ namespace Logica {
 
         public override int Outputs {
             get {
-                return _shape[0] * _shape[1];
+                return Shape[0] * Shape[1];
             }
         }
         public int Depth {
             get {
                 return _depth;
             }
-            private set {
+            set {
                 if (value <= 0) { throw new ArgumentException("invalid depth, expecting a minimum of 1 new channel"); }
                 _depth = value;
             }
         }
 
+        public ConvolutionLayer() { }
+        public ConvolutionLayer(SerializationInfo info, StreamingContext context) {
+            Depth = info.GetInt16("Depth");
+            Mode = (CorrelationModes)info.GetValue("Mode", typeof(CorrelationModes));
+            KernelList = (List<List<Matrix>>)info.GetValue("KernelList", typeof(List<List<Matrix>>));
+            Biases = (List<Matrix>)info.GetValue("Biases", typeof(List<Matrix>));
+        }
+
+        public ConvolutionLayer(int[] shape, int kernelsize, int depth) : this(shape, kernelsize, depth, new MatrixOperator(), new MatrixProvider()) { }
         public ConvolutionLayer(int[] shape, int kernelsize, int depth, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) :
             this(shape, kernelsize, depth, CorrelationModes.VALID, matrixOperator, matrixProvider) { }
 
         public ConvolutionLayer(int[] shape, int kernelsize, int depth, CorrelationModes mode, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) {
             if (shape == null) throw new ArgumentNullException("shape");
             if (shape.Length != 3) throw new ArgumentException("invalid shape, expecting 3 values in order, rows, colums, channels");
-            this._shape = shape;
+            this.Shape = shape;
             this._depth = depth;
-            this._mode = mode;
+            this.Mode = mode;
             this._matrixOperator = matrixOperator;
             this._matrixProvider = matrixProvider;
             this.UsesList = true;
-            this._kernelShape = new int[] { kernelsize, kernelsize };
             KernelList = new List<List<Matrix>>();
             Biases = new List<Matrix>();
 
@@ -73,9 +93,9 @@ namespace Logica {
             _inputList = new List<Matrix>(inputList);
             _outputList = new List<Matrix>(Biases);
             for (int i = 0; i < Depth; i++) {
-                for (int j = 0; j < _shape[2]; j++) {
+                for (int j = 0; j < Shape[2]; j++) {
                     Matrix input = inputList[j];
-                    if (_mode == CorrelationModes.SAME) input = _matrixOperator.Pad(inputList[j], 1, 1, 1, 1);
+                    if (Mode == CorrelationModes.SAME) input = _matrixOperator.Pad(inputList[j], 1, 1, 1, 1);
                     var correlated = _matrixOperator.Correlate(input, KernelList[i][j]);
                     _outputList[i] = _matrixOperator.Add(_outputList[i], correlated);
                 }
@@ -86,13 +106,13 @@ namespace Logica {
 
         public override List<Matrix> Backward(List<Matrix> outputGradient, double rate) {
             var inputGradient = new List<Matrix>();
-            for (int i = 0; i < _shape[2]; i++) inputGradient.Add(_matrixProvider.Zero(_shape[0], _shape[1]));
+            for (int i = 0; i < Shape[2]; i++) inputGradient.Add(_matrixProvider.Zero(Shape[0], Shape[1]));
 
             for (int i = 0; i < Depth; i++) {
-                for (int j = 0; j < _shape[2]; j++) { // TODO: uitzoeken hoe BACKWARD werkt met full convolution
+                for (int j = 0; j < Shape[2]; j++) { // TODO: uitzoeken hoe BACKWARD werkt met full convolution
                     KernelList[i][j] = _matrixOperator.Subtract(KernelList[i][j],
                         _matrixOperator.Correlate(_inputList[j], outputGradient[j])
-                        .Map((x) => { return x * rate; }));
+                        .MapCopy((x) => { return x * rate; }));
                     inputGradient[j] = _matrixOperator.Add(inputGradient[j],
                         _matrixOperator.Convolve(
                             _matrixOperator.Pad(outputGradient[j], KernelList[i][j].Rows - 1, KernelList[i][j].Rows - 1,
@@ -114,6 +134,13 @@ namespace Logica {
 
         public override Matrix Backward(Matrix gradient, double rate) { // heeft geen implementatie
             throw new NotImplementedException();
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            info.AddValue("Depth", Depth);
+            info.AddValue("Mode", Mode);
+            info.AddValue("KernelList", KernelList);
+            info.AddValue("Biases", Biases);
         }
     }
 }

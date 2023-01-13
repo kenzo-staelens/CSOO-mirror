@@ -9,6 +9,8 @@ namespace Logica {
     public class TanhLayer : ActivationLayer {
         private double tanh(double x) { return (Math.Exp(2 * x) - 1) / (Math.Exp(2 * x) + 1); }
 
+        public TanhLayer() { }
+
         /// <summary>
         /// extentie van activatie laag om Tanh direct te implementeren
         /// </summary>

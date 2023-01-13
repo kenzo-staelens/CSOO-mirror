@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Globals;
 
 namespace Logica {
     public abstract class Layer {
         private bool _usesList;
-        public bool UsesList { get {
+
+        public bool UsesList {
+            get {
                 return _usesList;
             }
-            protected set {
+            set { // zou normaal protected zijn; in plaats is public wegens serializatie
                 _usesList = value;
             }
         }
