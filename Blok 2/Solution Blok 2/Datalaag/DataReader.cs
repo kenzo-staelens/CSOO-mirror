@@ -5,19 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#pragma warning disable CS8603
 namespace Datalaag {
     public static class DataReader {
         /// <summary>
         /// leest binary data van een file
         /// </summary>
         /// <param name="filename"></param>
-        /// <returns></returns>
+        /// <returns>memorystream waarin data is geschreven</returns>
         /// <see cref="https://stackoverflow.com/questions/18331349/net-4-5-file-read-performance-sync-vs-async"/>
         public static async Task<MemoryStream> ReadAllFileAsync(string filename) {
             MemoryStream ms = new MemoryStream();
             using (var file = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true)) {
                 file.Position = 0;
-                file.CopyTo(ms);
+                await file.CopyToAsync(ms);
                 ms.Position = 0;
                 return ms;
             }

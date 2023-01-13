@@ -21,7 +21,7 @@ internal class Program {
 opties voor uitvoeren van code:
 1. handgeschreven cijfers(0 of 1) classificeren (zeer traag)
 2. xor ""problem"" (vrij snel)");
-        string answer = Console.ReadLine();
+        string answer = Console.ReadLine() ?? "";
         int choice = 2;
         do {
             try {
@@ -101,8 +101,8 @@ opties voor uitvoeren van code:
                 serializedXml = stringWriter.ToString();
             }
             Console.WriteLine("path to save to: ");
-            string path = Console.ReadLine();
-            XML_IO.Write(path, serializedXml);
+            string? path = Console.ReadLine();
+            XML_IO.Write(path ?? "", serializedXml);
         }
         else if (choice == 2) {
             Console.Write("extra notitie: soms blijft deze hangen in een \"verkeerde vallei\" en soms is dan soms geen correcte output");

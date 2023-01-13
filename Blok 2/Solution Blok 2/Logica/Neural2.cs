@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
+#pragma warning disable CS8618 
+#pragma warning disable CS8600 
 namespace Logica {
     public class Neural2 : MachineLearningModel,ISerializable {
         public List<Layer> LayerList;
@@ -34,7 +36,7 @@ namespace Logica {
         public Neural2() { }
         public Neural2(SerializationInfo info, StreamingContext context) {
             Inputs = info.GetInt32("Inputs");
-            LayerList = (List<Layer>)info.GetValue("LayerList",typeof(List<Layer>));
+            LayerList = (List<Layer>)info.GetValue("LayerList", typeof(List<Layer>)) ?? new List<Layer>();
         }
 
         public Neural2(int inputs, IMatrixOperator matrixOperator, IMatrixProvider matrixProvider) : this(inputs, 0.5, matrixOperator, matrixProvider) { }

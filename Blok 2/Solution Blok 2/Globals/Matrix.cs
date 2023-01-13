@@ -9,6 +9,8 @@ using System.Xml.Serialization;
 using System.Xml;
 using System.Runtime.ConstrainedExecution;
 
+#pragma warning disable CS8618 
+#pragma warning disable CS8600
 namespace Globals {
     public struct Matrix : ISerializable {
 
@@ -57,7 +59,7 @@ namespace Globals {
 
         public Matrix() { }
         public Matrix(SerializationInfo info, StreamingContext context) {
-            JaggedMatrix = (double[][])info.GetValue("JaggedMatrix", typeof(double[][]));
+            JaggedMatrix = (double[][])info.GetValue("JaggedMatrix", typeof(double[][])) ?? new double[1][];
         }
 
         public Matrix(Matrix mat) {

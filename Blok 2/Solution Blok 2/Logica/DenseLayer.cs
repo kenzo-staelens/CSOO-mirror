@@ -3,6 +3,8 @@ using ExtensionMethods;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
+#pragma warning disable CS8618 
+#pragma warning disable CS8605
 namespace Logica {
     public class DenseLayer : Layer, ISerializable {
         public override int Outputs {

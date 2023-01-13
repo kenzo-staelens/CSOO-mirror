@@ -9,7 +9,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-
+#pragma warning disable CS8618 
+#pragma warning disable CS8600 
 namespace Logica {
     /// <summary>
     /// class that handles convolution layer logic
@@ -37,8 +38,8 @@ namespace Logica {
         public List<List<Matrix>> KernelList;
         public List<Matrix> Biases;
 
-        private List<Matrix>? _inputList;
-        private List<Matrix>? _outputList;
+        private List<Matrix> _inputList;
+        private List<Matrix> _outputList;
 
         public override int Outputs {
             get {
@@ -58,9 +59,9 @@ namespace Logica {
         public ConvolutionLayer() { }
         public ConvolutionLayer(SerializationInfo info, StreamingContext context) {
             Depth = info.GetInt16("Depth");
-            Mode = (CorrelationModes)info.GetValue("Mode", typeof(CorrelationModes));
-            KernelList = (List<List<Matrix>>)info.GetValue("KernelList", typeof(List<List<Matrix>>));
-            Biases = (List<Matrix>)info.GetValue("Biases", typeof(List<Matrix>));
+            Mode = (CorrelationModes?)info.GetValue("Mode", typeof(CorrelationModes)) ?? CorrelationModes.VALID;
+            KernelList = (List<List<Matrix>>)info.GetValue("KernelList", typeof(List<List<Matrix>>)) ?? new List<List<Matrix>>();
+            Biases = (List<Matrix>)info.GetValue("Biases", typeof(List<Matrix>)) ?? new List<Matrix>();
         }
 
         public ConvolutionLayer(int[] shape, int kernelsize, int depth) : this(shape, kernelsize, depth, new MatrixOperator(), new MatrixProvider()) { }

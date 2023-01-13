@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
+#pragma warning disable CS8618 
 namespace Logica {
     /// <summary>
     /// omzettingen tussen types input voor convolution laag (List<Matrix>) en dense laag (Matrix)
