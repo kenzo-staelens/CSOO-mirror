@@ -17,7 +17,7 @@ namespace Logica {
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=Lakz2MoHy6o"/>
     public class ConvolutionLayer : Layer,ISerializable {
-        public int[] Shape { get; }
+        public int[] Shape { get; set; }
         
         public int[] KernelShape {
             get {
@@ -43,8 +43,9 @@ namespace Logica {
 
         public override int Outputs {
             get {
-                return Shape[0] * Shape[1];
+                return (Shape[0] - KernelShape[0] + 1) * (Shape[1]-KernelShape[1]+1);
             }
+            set { /*void*/}
         }
         public int Depth {
             get {
@@ -56,7 +57,10 @@ namespace Logica {
             }
         }
 
-        public ConvolutionLayer() { }
+        public ConvolutionLayer() {
+            this._matrixOperator = new MatrixOperator();
+            this._matrixProvider = new MatrixProvider();
+        }
         public ConvolutionLayer(SerializationInfo info, StreamingContext context) {
             Depth = info.GetInt16("Depth");
             Mode = (CorrelationModes?)info.GetValue("Mode", typeof(CorrelationModes)) ?? CorrelationModes.VALID;
@@ -112,21 +116,19 @@ namespace Logica {
             for (int i = 0; i < Depth; i++) {
                 for (int j = 0; j < Shape[2]; j++) { // TODO: uitzoeken hoe BACKWARD werkt met full convolution
                     KernelList[i][j] = _matrixOperator.Subtract(KernelList[i][j],
-                        _matrixOperator.Correlate(_inputList[j], outputGradient[j])
+                        _matrixOperator.Correlate(_inputList[j], outputGradient[i])
                         .MapCopy((x) => { return x * rate; }));
                     inputGradient[j] = _matrixOperator.Add(inputGradient[j],
                         _matrixOperator.Convolve(
-                            _matrixOperator.Pad(outputGradient[j], KernelList[i][j].Rows - 1, KernelList[i][j].Rows - 1,
+                            _matrixOperator.Pad(outputGradient[i], KernelList[i][j].Rows - 1, KernelList[i][j].Rows - 1,
                             KernelList[i][j].Columns - 1, KernelList[i][j].Columns - 1),
                             KernelList[i][j]));
                 }
             }
 
-            for (int i = 0; i < Biases.Count; i++) Biases[i] = _matrixOperator.Subtract(Biases[i], outputGradient[i]);
-            // outputGradient -> map al eerder uitgevoerd; Map (zonder copy) voert aanpassing uit op bestaande matrix, niet nogmaals nodig
+            for (int i = 0; i < Biases.Count; i++) Biases[i] = _matrixOperator.Subtract(Biases[i], outputGradient[i].MapCopy(x=>x*rate));
             inputGradient.Insert(0, new Matrix(1, 1)); // never de-encapsulate
             return inputGradient;
-
         }
 
         public override Matrix Forward(Matrix input) { // heeft geen implementatie

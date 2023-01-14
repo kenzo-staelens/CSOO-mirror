@@ -11,6 +11,7 @@ namespace Logica {
             get {
                 return Weights.Rows;
             }
+            set { /*void*/}
         }
 
         public Matrix Weights;
@@ -20,7 +21,9 @@ namespace Logica {
 
         private IMatrixOperator _matrixOperator;
 
-        public DenseLayer() { }
+        public DenseLayer() {
+            _matrixOperator = new MatrixOperator();
+        }
         public DenseLayer(SerializationInfo info, StreamingContext context) {
             UsesList = info.GetBoolean("UsesList");
             Weights = (Matrix)info.GetValue("Weights", typeof(Matrix));

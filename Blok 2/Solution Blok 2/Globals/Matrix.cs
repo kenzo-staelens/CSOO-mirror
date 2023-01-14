@@ -126,5 +126,9 @@ namespace Globals {
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue("jaggedMatrix", JaggedMatrix);
         }
+
+        public IEnumerator GetEnumerator() {
+            return MatrixData.GetEnumerator();
+        }
     }
 }

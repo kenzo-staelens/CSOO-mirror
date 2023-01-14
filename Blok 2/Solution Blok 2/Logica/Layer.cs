@@ -18,7 +18,9 @@ namespace Logica {
                 _usesList = value;
             }
         }
-        public abstract int Outputs { get; }
+
+        protected int _outputs;
+        public abstract int Outputs { get; set; }
 
         public abstract Matrix Forward(Matrix input);
         public abstract Matrix Backward(Matrix gradient, double rate);

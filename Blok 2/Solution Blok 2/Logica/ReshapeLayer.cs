@@ -55,6 +55,7 @@ namespace Logica {
                 if (_outputShape.Length == 3) temp *= _outputShape[2];
                 return temp;
             }
+            set { /*void*/}
         }
         public ReshapeLayer() { }
         public ReshapeLayer(SerializationInfo info, StreamingContext context) {

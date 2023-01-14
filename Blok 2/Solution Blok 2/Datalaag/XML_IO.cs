@@ -8,7 +8,7 @@ namespace Datalaag {
     public class XML_IO {
         public static void Write(string path, string XmlString) {
             if (!path.EndsWith(".xml")) throw new ArgumentException("expected xml as file extension");
-            using (StreamWriter outputFile = new StreamWriter(path)) {
+            using (StreamWriter outputFile = new StreamWriter(path, false)) {
                 outputFile.Write(XmlString);
             }
         }

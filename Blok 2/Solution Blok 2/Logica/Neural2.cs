@@ -1,4 +1,5 @@
 ﻿using Datalaag;
+using ExtensionMethods;
 using Globals;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,10 @@ namespace Logica {
             }
         }
 
-        public Neural2() { }
+        public Neural2() {
+            this._matrixOperator = new MatrixOperator();
+            this._matrixProvider = new MatrixProvider();
+        }
         public Neural2(SerializationInfo info, StreamingContext context) {
             Inputs = info.GetInt32("Inputs");
             LayerList = (List<Layer>)info.GetValue("LayerList", typeof(List<Layer>)) ?? new List<Layer>();
@@ -56,10 +60,10 @@ namespace Logica {
             if (nodes <= 0) throw new ArgumentException("invalid number of nodes, expecting 1 or more");
             Matrix weights;
             if (LayerList.Count == 0) {
-                weights = _matrixProvider.Random(nodes, Inputs);
+                weights = _matrixProvider.Zero(nodes, Inputs).Map(x=>x+1);
             }
             else {
-                weights = _matrixProvider.Random(nodes, Outputs);
+                weights = _matrixProvider.Zero(nodes, Outputs).Map(x=>x+1);
             }
             Matrix biases = _matrixProvider.Random(nodes, 1);
             LayerList.Add(new DenseLayer(weights, biases, _matrixOperator));
@@ -114,7 +118,12 @@ namespace Logica {
                     processObj = LayerList[i].Forward((Matrix)processObj);
                 }
             }
-            return (Matrix)processObj;
+            if (processObj.GetType().Name == "Matrix") {
+                return (Matrix)processObj;
+            }
+            else {
+                return ((List<Matrix>)processObj)[0];
+            }
         }
 
         public override void Train(List<double[]> trainingInput, List<double[]> trainingOutput) {
@@ -158,7 +167,14 @@ namespace Logica {
                         }
                         else gradientObj = LayerList[l].Backward((Matrix)gradientObj, TrainingRate);
                     }
-                    if (verbose) Console.WriteLine($"epoch: {epoch}({i}/{trainingInput.Count})");
+                    var lo = loss(expected, output);
+                    if (verbose) {
+                        Console.WriteLine($"epoch: {epoch}({i}/{trainingInput.Count}) loss: {lo}");
+                        Console.WriteLine(output[0,0]);
+                        Console.WriteLine(output[1,0]);
+                        Console.WriteLine(expected[0,0]);
+                        Console.WriteLine(expected[1,0]);
+                    }
                 }
                 Console.WriteLine($"epoch: {epoch}, error: {error / trainingInput.Count}");
                 if (error / trainingInput.Count <= maxError) return;

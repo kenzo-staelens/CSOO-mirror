@@ -8,8 +8,13 @@ using System.Threading.Tasks;
 namespace Logica {
     public class TanhLayer : ActivationLayer {
         private double tanh(double x) { return (Math.Exp(2 * x) - 1) / (Math.Exp(2 * x) + 1); }
-
-        public TanhLayer() { }
+        public override int Outputs => _outputs;
+        public TanhLayer() {
+            ActivationFunction a = new ActivationFunction(
+                                tanh,
+                                y => { return 1 - Math.Pow(tanh(y), 2); });
+            this.activation = a;
+        }
 
         /// <summary>
         /// extentie van activatie laag om Tanh direct te implementeren
