@@ -288,5 +288,23 @@ namespace Logica {
             });
             return result;
         }
+
+        public double Average(Matrix mat) {
+            double result=0;
+            if (mat.Rows * mat.Columns < _parallelThreshold) {
+                for (int i = 0; i < mat.Rows; i++) {
+                    for (int j = 0; j < mat.Columns; j++) {
+                        result += mat[i, j];
+                    }
+                }
+                return result;
+            }
+            Parallel.For(0, mat.Rows, (i) => {
+                for (int j = 0; j < mat.Columns; j++) {
+                    result += mat[i, j];
+                }
+            });
+            return result / (mat.Rows * mat.Columns);
+        }
     }
 }

@@ -13,9 +13,14 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Xml;
 using System.Text.Json;
+using System.Diagnostics;
+using System.Runtime.Serialization;
 
 #pragma warning disable CS8600
 #pragma warning disable CS8602
+#pragma warning disable CS0162
+#pragma warning disable IDE0035
+
 internal class Program {
     static void Main(string[] args) {
         Console.WriteLine(
@@ -23,9 +28,10 @@ internal class Program {
 opties voor uitvoeren van code:
 1. handgeschreven cijfers(0 of 1) classificeren (zeer traag)
 2. xor ""problem"" (vrij snel)");
-        string answer = Console.ReadLine() ?? "";
-        int choice = 2;
+        string answer;
+        int choice = 0;
         do {
+            answer = Console.ReadLine() ?? "";
             try {
                 choice = Int16.Parse(answer);
                 if (choice != 1 && choice != 2) choice = 0;
@@ -56,21 +62,20 @@ opties voor uitvoeren van code:
             }
             return result;
         };
+        Neural2? nn = null;
+        string serializedXml;
+        XmlSerializer serializer = new XmlSerializer(typeof(Neural2), new Type[] {
+            typeof(DenseLayer),
+            typeof(ConvolutionLayer),
+            typeof(ReshapeLayer),
+            typeof(ActivationLayer),
+            typeof(SigmoidLayer),
+            typeof(TanhLayer),
+        });
 
         if (choice == 1) {// mnist
-            Neural2 nn;
             Console.WriteLine("gebruik pre-trained model? (geef een pad of laat leeg)");
             answer = Console.ReadLine() ?? "";
-            string serializedXml;
-            XmlSerializer serializer = new XmlSerializer(typeof(Neural2), new Type[] {
-                typeof(DenseLayer),
-                typeof(ConvolutionLayer),
-                typeof(ReshapeLayer),
-                typeof(ActivationLayer),
-                typeof(SigmoidLayer),
-                typeof(TanhLayer),
-            });
-
             if (answer.Length > 0) {
                 serializedXml = XML_IO.Read(answer);
                 using (StringReader stringReader = new StringReader(serializedXml)) {
@@ -81,40 +86,33 @@ opties voor uitvoeren van code:
                 nn = new Neural2(784, mo, mp);
                 nn.AddReshapeLayer(new int[] { 28 * 28, 1 }, new int[] { 28, 28, 1 });
                 nn.AddConvolutionLayer(new int[] { 28, 28, 1 }, 3, 5);
-                nn.addActivation(ActivationType.SIGMOID);
+                nn.AddActivation(ActivationType.SIGMOID);
                 nn.AddReshapeLayer(new int[] { 26, 26, 5 }, new int[] { 26 * 26 * 5, 1 });
                 nn.AddDenseLayer(100);
-                nn.addActivation(ActivationType.SIGMOID);
+                nn.AddActivation(ActivationType.SIGMOID);
                 nn.AddDenseLayer(1);
-                nn.addActivation(ActivationType.SIGMOID);
-
+                nn.AddActivation(ActivationType.SIGMOID);
                 nn.TrainingRate = 0.1;
 
+                Console.WriteLine("trainingdata inladen...");
                 List<List<double[]>> labeledTrainImages = LoadPreparedTrainData();
 
                 nn.Train(labeledTrainImages[0], labeledTrainImages[1], loss, lossPrime, 20, 0);
             }
+            Console.WriteLine("\ntestdata inladen...");
             List<List<double[]>> labeledTestImages = LoadPreparedTestData();
-            
+
             for (int i = 0; i < labeledTestImages[0].Count; i++) {
                 var output = nn.Predict(labeledTestImages[0][i]);
                 Console.WriteLine($"expected: {labeledTestImages[1][i][0]}, result(rounded output): {Math.Round(output[0, 0])}");
             }
-
-            using (StringWriter stringWriter = new StringWriter()) {
-                serializer.Serialize(stringWriter, nn);
-                serializedXml = stringWriter.ToString();
-            }
-            Console.WriteLine("path to save to (geef een pad op of laat leeg): ");
-            string? path = Console.ReadLine();
-            XML_IO.Write(path ?? "", serializedXml);
         }
         else if (choice == 2) {
-            Console.Write("extra notitie: soms blijft deze hangen in een \"verkeerde vallei\" en soms is dan soms geen correcte output");
-            NeuralNetwork nn = new NeuralNetwork(2, mo, mp);
-            nn.AddLayer(2);
-            nn.AddLayer(1);
-
+            nn = new Neural2(2, mo, mp);
+            nn.AddDenseLayer(3);
+            nn.AddActivation(ActivationType.SIGMOID);
+            nn.AddDenseLayer(1);
+            nn.AddActivation(ActivationType.TANH);
             nn.TrainingRate = 0.1;
 
             List<double[]> trainInput = new List<double[]>() {
@@ -125,25 +123,38 @@ opties voor uitvoeren van code:
             };
 
             List<double[]> trainLabels = new List<double[]>() {
-                new double[]{0},
-                new double[]{1},
-                new double[]{1},
-                new double[]{0}
+                new double[]{-1},
+                new double[]{ 1},
+                new double[]{ 1},
+                new double[]{-1}
             };
 
-            for (int i = 0; i < 100000; i++) nn.Train(trainInput, trainLabels);
-            double[] temp = new double[28 * 28];
+            loss = (Matrix expected, Matrix predicted) => {
+                var sub = mo.Subtract(expected, predicted);
+                sub = mo.Multiply(sub, sub);
+                return mo.Average(sub);
+            };
 
+            lossPrime = (Matrix expected, Matrix predicted) => {
+                return mo.Multiply(mo.Subtract(expected, predicted),
+                    mp.Zero(expected.Rows, expected.Columns).Map(x => 2 / (expected.Rows * expected.Columns))
+                    );
+            };
+
+            nn.Train(trainInput, trainLabels, loss, lossPrime, 10000, 0, false);
+            double[][] gs = new double[28][];
+            
             for (double i = 0; i < 28; i++) {
+                double[] gs2 = new double[28];
                 for (double j = 0; j < 28; j++) {
-                    temp[(int)i * 28 + (int)j] = (Math.Floor(nn.Predict(new double[] { i / 27, j / 27 })[0, 0] * 1000));
+                    gs2[(int)j] = nn.Predict(new double[] { i / 27, j / 27 })[0,0];
                 }
+                gs[(int)i] = gs2;
             }
-            Console.WriteLine(
-                FormatMnistArray(temp)  //duidelijk dat dit geen mnist array is, maar deze functie bestond nog sinds testen
-            );
-
+            Console.WriteLine();
+            PrintGreyscaleArray(gs);
         }
+        save(serializer, nn ?? new Neural2(1, mo, mp));
     }
 
     static double[] Sanitize(double[] arr, double min, double max) {
@@ -153,20 +164,14 @@ opties voor uitvoeren van code:
         return arr;
     }
 
-    static string FormatMnistArray(double[] arr) {
-        string txt = "";
-        string format = "{1,3}";
-        for (int i = 1; i < 28; i++) { format += ", {" + i.ToString() + ",3}"; }
-        for (int i = 0; i < arr.Length; i += 28) {
-            string formatted = String.Format(format,
-                arr[0 + i], arr[1 + i], arr[2 + i], arr[3 + i], arr[4 + i], arr[5 + i], arr[6 + i], arr[7 + i],
-                arr[8 + i], arr[9 + i], arr[10 + i], arr[11 + i], arr[12 + i], arr[13 + i], arr[14 + i], arr[15 + i],
-                arr[16 + i], arr[17 + i], arr[18 + i], arr[19 + i], arr[20 + i], arr[21 + i], arr[22 + i], arr[23 + i],
-                arr[24 + i], arr[25 + i], arr[26 + i], arr[27 + i]
-                );
-            txt += formatted + "\n";
+    static void PrintGreyscaleArray(double[][] arr) {//232 - 255
+        for (int i = 0; i < arr.Length; i++) {
+            for(int j = 0; j < arr[i].Length;j++) {
+                Console.Write($"\x1b[48;5;" + (int)Math.Floor(Helper.Scale(arr[i][j],-1,1,232,256))+"m  ");
+            }
+            Console.WriteLine("\x1b[48;5;232m");
         }
-        return txt;
+        Console.WriteLine();
     }
 
     static List<List<double[]>> LoadPreparedTrainData() {
@@ -190,9 +195,10 @@ opties voor uitvoeren van code:
 
         foreach (var val in trainFilteredImages) Sanitize(val, 0, 255);
 
-        List<List<double[]>> result = new List<List<double[]>>();
-        result.Add(trainFilteredImages);
-        result.Add(trainFilteredLabels);
+        List<List<double[]>> result = new List<List<double[]>> {
+            trainFilteredImages,
+            trainFilteredLabels
+        };
         return result;
     }
 
@@ -216,9 +222,24 @@ opties voor uitvoeren van code:
 
         foreach (var val in testFilteredImages) Sanitize(val, 0, 255);
 
-        List<List<double[]>> result = new List<List<double[]>>();
-        result.Add(testFilteredImages);
-        result.Add(testFilteredLabels);
+        List<List<double[]>> result = new List<List<double[]>> {
+            testFilteredImages,
+            testFilteredLabels
+        };
         return result;
+    }
+
+    static void save(XmlSerializer serializer, Neural2 nn) {
+        string serializedXml;
+        using (StringWriter stringWriter = new StringWriter()) {
+            serializer.Serialize(stringWriter, nn);
+            serializedXml = stringWriter.ToString();
+        }
+        try {
+            Console.WriteLine("path to save to (geef een pad op of laat leeg): ");
+            string? path = Console.ReadLine();
+            XML_IO.Write(path ?? "", serializedXml);
+        }
+        catch { }
     }
 }

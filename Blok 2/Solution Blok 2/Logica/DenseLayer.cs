@@ -53,8 +53,8 @@ namespace Logica {
         public override Matrix Backward(Matrix outputGradient, double rate) {
             var weightGradient = _matrixOperator.Dot(outputGradient, _matrixOperator.Transpose(_input));
             var inputGradient = _matrixOperator.Dot(_matrixOperator.Transpose(Weights), outputGradient);
-            this.Weights = _matrixOperator.Subtract(this.Weights, weightGradient.MapCopy((double x) => { return x * rate; }));
-            this.Biases = _matrixOperator.Subtract(this.Biases, outputGradient.MapCopy((double x) => { return x * rate; }));
+            this.Weights = _matrixOperator.Add(this.Weights, weightGradient.MapCopy((double x) => { return x * rate; }));
+            this.Biases = _matrixOperator.Add(this.Biases, outputGradient.MapCopy((double x) => { return x * rate; }));
             return inputGradient;
         }
 

@@ -19,8 +19,7 @@ namespace Logica {
         public SigmoidLayer(int nodes, IMatrixOperator matrixOperator) : base(nodes, new ActivationFunction(), matrixOperator) {
             ActivationFunction a = new ActivationFunction(
                             sigmoid,
-                            y => { return y * 1 - y; });
-                            // y => { return sigmoid(y) * (1 - sigmoid(y)); });
+                            y => { return sigmoid(y) * (1 - sigmoid(y)); });
             this.activation = a;
         }
     }

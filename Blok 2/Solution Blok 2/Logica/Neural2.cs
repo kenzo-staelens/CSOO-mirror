@@ -73,8 +73,12 @@ namespace Logica {
             this.LayerList.Add(new ReshapeLayer(inputShape, outputShape));
         }
 
-        public void addActivation(ActivationType type) {
-            var layered = LayerList.Last().UsesList;
+        public void AddActivation(ActivationType type) {
+            bool layered;
+            try {
+                layered = LayerList.Last().UsesList;
+            }
+            catch { layered = false; }
             switch (type) {
                 case ActivationType.SIGMOID:
                     LayerList.Add(new SigmoidLayer(Outputs, _matrixOperator));
@@ -117,7 +121,16 @@ namespace Logica {
             throw new NotImplementedException();
         }
 
+        public void Train(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix, Matrix, double> loss, Func<Matrix, Matrix, Matrix> lossPrime, int epochs) {
+            Train(trainingInput, trainingOutput, loss, lossPrime, epochs, 0, true);
+        }
         public void Train(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix, Matrix, double> loss, Func<Matrix, Matrix, Matrix> lossPrime, int epochs, double maxError) {
+            Train(trainingInput, trainingOutput, loss, lossPrime, epochs, maxError, true);
+        }
+        public void Train(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix, Matrix, double> loss, Func<Matrix, Matrix, Matrix> lossPrime, int epochs, bool verbose) {
+            Train(trainingInput, trainingOutput, loss, lossPrime, epochs, 0, verbose);
+        }
+        public void Train(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix, Matrix, double> loss, Func<Matrix, Matrix, Matrix> lossPrime, int epochs, double maxError, bool verbose) {
             if (trainingInput.Count != trainingOutput.Count) throw new MLProcessingException($"length of input list ({trainingInput.Count}) and target list ({trainingOutput.Count}) arrays must be equal");
             if (trainingInput[0].Length != Inputs) throw new MLProcessingException($"number of inputs ({trainingInput[0].Length}) input nodes({Inputs}) must be equal");
             if (trainingOutput[0].Length != Outputs) throw new MLProcessingException($"number of outputs ({trainingOutput[0].Length}) output nodes({Outputs}) must be equal");
@@ -145,7 +158,7 @@ namespace Logica {
                         }
                         else gradientObj = LayerList[l].Backward((Matrix)gradientObj, TrainingRate);
                     }
-                    /*if (i % 50 == 0 && i != 0) */ Console.WriteLine($"epoch: {epoch}({i}/{trainingInput.Count})");
+                    if (verbose) Console.WriteLine($"epoch: {epoch}({i}/{trainingInput.Count})");
                 }
                 Console.WriteLine($"epoch: {epoch}, error: {error / trainingInput.Count}");
                 if (error / trainingInput.Count <= maxError) return;
