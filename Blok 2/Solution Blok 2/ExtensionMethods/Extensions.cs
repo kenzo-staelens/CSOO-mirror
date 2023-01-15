@@ -24,8 +24,8 @@ namespace ExtensionMethods {
         }
 
         public static Matrix MapCopy(this Matrix value, Func<double, double> mappingMethod) {
-            Matrix result = new Matrix(value.Rows, value.Columns);
-            if (value.Rows * value.Columns < 1000) {
+            Matrix result = new Matrix(value);
+            /*if (value.Rows * value.Columns < 1000) {
                 for (int i = 0; i < value.Rows; i++) {
                     for (int j = 0; j < value.Columns; j++) {
                         result[i, j] = value[i, j].Map(mappingMethod);
@@ -37,8 +37,8 @@ namespace ExtensionMethods {
                 for (int j = 0; j < value.Columns; j++) {
                     result[i, j] = value[i, j].Map(mappingMethod);
                 }
-            });
-            return result;
+            });*/
+            return result.Map(mappingMethod);
         }
     }
 }

@@ -297,7 +297,7 @@ namespace Logica {
                         result += mat[i, j];
                     }
                 }
-                return result;
+                return result/(mat.Rows*mat.Columns);
             }
             Parallel.For(0, mat.Rows, (i) => {
                 for (int j = 0; j < mat.Columns; j++) {

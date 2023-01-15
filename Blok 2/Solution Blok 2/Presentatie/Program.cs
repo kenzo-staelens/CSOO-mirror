@@ -30,7 +30,7 @@ opties voor uitvoeren van code:
 2. xor ""problem"" (vrij snel)");
         string answer;
         int choice = 0;
-        do {
+        while(choice==0){
             answer = Console.ReadLine() ?? "";
             try {
                 choice = Int16.Parse(answer);
@@ -39,24 +39,19 @@ opties voor uitvoeren van code:
             catch {
                 Console.WriteLine("geef een nummer 1 of 2");
             }
-        } while (choice == 0);
+        }
 
         IMatrixOperator mo = new MatrixOperator(500);
         IMatrixProvider mp = new MatrixProvider();
 
         // binary cross entropy
         Func<Matrix, Matrix, double> loss = (Matrix expected, Matrix predicted) => {
-            var predcp1 = predicted.MapCopy(x => -Math.Log10(x));
+            var predcp1 = predicted.MapCopy(x => -Math.Log(x));
             var expcp1 = expected.MapCopy(y => 1 - y);
-            var predcp2 = predicted.MapCopy(x => -Math.Log10(1 - x));
+            var predcp2 = predicted.MapCopy(x => -Math.Log(1 - x));
             var mul1 = mo.Multiply(expected, predcp1);
             var mul2 = mo.Multiply(expcp1, predcp2);
-            return mo.Average(
-                mo.Add(
-                    mul1,
-                    mul2
-                )
-            );
+            return mo.Average(mo.Add(mul1,mul2));
         };
         //bce prime
         Func<Matrix, Matrix, Matrix> lossPrime = (Matrix expected, Matrix predicted) => {
@@ -93,11 +88,8 @@ opties voor uitvoeren van code:
                 }
                 catch (ArgumentException) { Console.WriteLine("ongeldig bestand"); fromScratch = true; }
                 catch { Console.WriteLine("bestand kon niet worden gevonden"); fromScratch = true; }
-                //var labeledTrainImages = LoadPreparedTrainData();
-                var l1 = new double[28 * 28];
-                for(int i=0;i<l1.Length;i++) { l1[i] = 1; }
-                var labeledTrainImages = new List<List<double[]>> { new List<double[]> { l1 },new List<double[]> { new double[] {0,1} } };
-                nn.Train(labeledTrainImages[0], labeledTrainImages[1], loss, lossPrime, 3, 0.1);
+                var labeledTrainImages = LoadPreparedTrainData();
+                nn.Train(labeledTrainImages[0], labeledTrainImages[1], loss, lossPrime, 20, 0.05);
             }
             if (fromScratch) {
                 nn = new Neural2(784, mo, mp);
@@ -113,16 +105,24 @@ opties voor uitvoeren van code:
 
                 Console.WriteLine("trainingdata inladen...");
                 List<List<double[]>> labeledTrainImages = LoadPreparedTrainData();
-                //nn.Train(labeledTrainImages[0], labeledTrainImages[1], loss, lossPrime, 1, 0);
+                nn.Train(labeledTrainImages[0], labeledTrainImages[1], loss, lossPrime, 20, 0.05);
             }
 
             Console.WriteLine("\ntestdata inladen...");
-            //List<List<double[]>> labeledTestImages = LoadPreparedTestData();
-
-            //for (int i = 0; i < labeledTestImages[0].Count; i++) {
-            //    var output = nn.Predict(labeledTestImages[0][i]);
-            //    Console.WriteLine($"expected: {labeledTestImages[1][i][0]}, result(rounded output): {Math.Round(output[0, 0])}");
-            //}
+            List<List<double[]>> labeledTestImages = LoadPreparedTestData();
+            for(int i = 0; i < labeledTestImages[0].Count; i++) {
+                double[][] printable = new double[28][];
+                for (int j = 0; j < 28; j++) {
+                    double[] inner = new double[28];
+                    for(int k = 0; k < 28; k++) {
+                        inner[k] = labeledTestImages[0][i][j * 28 + k];
+                    }
+                    printable[j] = inner;
+                }
+                PrintGreyscaleArray(printable,0,1);
+                var predicted = nn.Predict(labeledTestImages[0][i]);
+                Console.WriteLine($"expected: {labeledTestImages[1][i][1]} predicted: {((predicted[0, 0] > predicted[1,0])?0:1)}");
+            }
         }
         else if (choice == 2) {
             nn = new Neural2(2, mo, mp);
@@ -153,12 +153,12 @@ opties voor uitvoeren van code:
             };
 
             lossPrime = (Matrix expected, Matrix predicted) => {
-                return mo.Multiply(mo.Subtract(expected, predicted),
+                return mo.Multiply(mo.Subtract(predicted, expected),
                     mp.Zero(expected.Rows, expected.Columns).Map(x => 2 / (expected.Rows * expected.Columns))
                     );
             };
 
-            nn.Train(trainInput, trainLabels, loss, lossPrime, 10000, 0, false);
+            nn.Train(trainInput, trainLabels, loss, lossPrime, 10000, 0, true);
             double[][] gs = new double[28][];
 
             for (double i = 0; i < 28; i++) {
@@ -169,9 +169,9 @@ opties voor uitvoeren van code:
                 gs[(int)i] = gs2;
             }
             Console.WriteLine();
-            PrintGreyscaleArray(gs);
+            PrintGreyscaleArray(gs,-1,1);
         }
-        save(serializer, nn);
+        Save(serializer, nn);
     }
 
     static double[] Sanitize(double[] arr, double min, double max) {
@@ -181,10 +181,10 @@ opties voor uitvoeren van code:
         return arr;
     }
 
-    static void PrintGreyscaleArray(double[][] arr) {//232 - 255
+    static void PrintGreyscaleArray(double[][] arr, int min, int max) {//232 - 255
         for (int i = 0; i < arr.Length; i++) {
             for (int j = 0; j < arr[i].Length; j++) {
-                Console.Write($"\x1b[48;5;" + (int)Math.Floor(Helper.Scale(arr[i][j], -1, 1, 232, 256)) + "m  ");
+                Console.Write($"\x1b[48;5;" + (int)Math.Floor(Helper.Scale(arr[i][j], min, max, 232, 256)) + "m  ");
             }
             Console.WriteLine("\x1b[48;5;232m");
         }
@@ -204,11 +204,10 @@ opties voor uitvoeren van code:
             trainLabelResult[i] = new double[] { Math.Abs(trainLabelResult[i][0] - 1), trainLabelResult[i][0]};
         }
 
-
         List<double[]> trainFilteredImages = new List<double[]>();
         List<double[]> trainFilteredLabels = new List<double[]>();
         for (int i = 0; i < trainLabelResult.Count; i++) {
-            if (trainLabelResult[i][0] == 0 || trainLabelResult[i][0] == 1) {
+            if (trainLabelResult[i][1] == 0 || trainLabelResult[i][1] == 1) {
                 trainFilteredImages.Add(trainImageResult[i]);
                 trainFilteredLabels.Add(trainLabelResult[i]);
             }
@@ -232,10 +231,14 @@ opties voor uitvoeren van code:
         var testImageResult = testImages.Result;
         var testLabelResult = testLabels.Result;
 
+        for (int i = 0; i < testLabelResult.Count; i++) {
+            testLabelResult[i] = new double[] { Math.Abs(testLabelResult[i][0] - 1), testLabelResult[i][0] };
+        }
+
         List<double[]> testFilteredImages = new List<double[]>();
         List<double[]> testFilteredLabels = new List<double[]>();
         for (int i = 0; i < testLabelResult.Count; i++) {
-            if (testLabelResult[i][0] == 0 || testLabelResult[i][0] == 1) {
+            if (testLabelResult[i][1] == 0 || testLabelResult[i][1] == 1) {
                 testFilteredImages.Add(testImageResult[i]);
                 testFilteredLabels.Add(testLabelResult[i]);
             }
@@ -250,9 +253,9 @@ opties voor uitvoeren van code:
         return result;
     }
 
-    static void save(XmlSerializer serializer, Neural2? nn) {
+    static void Save(XmlSerializer serializer, Neural2? nn) {
         string serializedXml;
-        using (StringWriter stringWriter = new StringWriter()) {
+        using (StringWriter stringWriter = new()) {
             serializer.Serialize(stringWriter, nn);
             serializedXml = stringWriter.ToString();
         }

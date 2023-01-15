@@ -126,7 +126,9 @@ namespace Logica {
                 }
             }
 
-            for (int i = 0; i < Biases.Count; i++) Biases[i] = _matrixOperator.Subtract(Biases[i], outputGradient[i].MapCopy(x=>x*rate));
+            for (int i = 0; i < Biases.Count; i++) {
+                Biases[i] = _matrixOperator.Subtract(Biases[i], outputGradient[i].MapCopy(x => x * rate));
+            }
             inputGradient.Insert(0, new Matrix(1, 1)); // never de-encapsulate
             return inputGradient;
         }

@@ -16,7 +16,7 @@ using System.Xml.Serialization;
 #pragma warning disable CS8618 
 #pragma warning disable CS8600 
 namespace Logica {
-    public class Neural2 : MachineLearningModel,ISerializable {
+    public class Neural2 : MachineLearningModel, ISerializable {
         public List<Layer> LayerList;
 
         private IMatrixProvider _matrixProvider;
@@ -60,10 +60,10 @@ namespace Logica {
             if (nodes <= 0) throw new ArgumentException("invalid number of nodes, expecting 1 or more");
             Matrix weights;
             if (LayerList.Count == 0) {
-                weights = _matrixProvider.Zero(nodes, Inputs).Map(x=>x+1);
+                weights = _matrixProvider.Random(nodes, Inputs);
             }
             else {
-                weights = _matrixProvider.Zero(nodes, Outputs).Map(x=>x+1);
+                weights = _matrixProvider.Random(nodes, Outputs);
             }
             Matrix biases = _matrixProvider.Random(nodes, 1);
             LayerList.Add(new DenseLayer(weights, biases, _matrixOperator));
@@ -150,8 +150,8 @@ namespace Logica {
                     var expected = _matrixProvider.FromArray(trainingOutput[i]);
                     expected = _matrixOperator.Transpose(expected);
                     var output = Predict(trainingInput[i]);
-
-                    error += loss(expected, output);
+                    var lo = loss(expected, output);
+                    error += lo;
                     Object gradientObj = lossPrime(expected, output);
 
                     for (int l = LayerList.Count - 1; l >= 0; l--) {
@@ -167,13 +167,9 @@ namespace Logica {
                         }
                         else gradientObj = LayerList[l].Backward((Matrix)gradientObj, TrainingRate);
                     }
-                    var lo = loss(expected, output);
+                    
                     if (verbose) {
                         Console.WriteLine($"epoch: {epoch}({i}/{trainingInput.Count}) loss: {lo}");
-                        Console.WriteLine(output[0,0]);
-                        Console.WriteLine(output[1,0]);
-                        Console.WriteLine(expected[0,0]);
-                        Console.WriteLine(expected[1,0]);
                     }
                 }
                 Console.WriteLine($"epoch: {epoch}, error: {error / trainingInput.Count}");
@@ -182,11 +178,11 @@ namespace Logica {
         }
 
         public void TrainRandom(List<double[]> trainingInput, List<double[]> trainingOutput, Func<Matrix, Matrix, Matrix> lossPrime, int iterations) {
-            for(int i = 0; i < iterations; i++) {
+            for (int i = 0; i < iterations; i++) {
                 int random = new Random().Next(trainingInput.Count);
                 Matrix expected = _matrixProvider.FromArray(trainingOutput[random]);
                 expected = _matrixOperator.Transpose(expected);
-                Matrix output = Predict(trainingInput[random]);                
+                Matrix output = Predict(trainingInput[random]);
 
                 Object gradientObj = lossPrime(expected, output);
 
