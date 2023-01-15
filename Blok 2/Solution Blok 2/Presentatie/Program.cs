@@ -158,7 +158,7 @@ opties voor uitvoeren van code:
                     );
             };
 
-            nn.Train(trainInput, trainLabels, loss, lossPrime, 10000, 0, true);
+            nn.Train(trainInput, trainLabels, loss, lossPrime, 10000, 0, false);
             double[][] gs = new double[28][];
 
             for (double i = 0; i < 28; i++) {
